@@ -25,7 +25,7 @@ module.exports = {
 }
 ```
 
-### 具体使用场景About.vue
+### 具体使用场景1About.vue
 
 ```javascript
 <template>
