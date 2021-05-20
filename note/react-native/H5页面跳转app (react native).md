@@ -43,7 +43,6 @@ jump() {
 //https://reactnative.cn/docs/linking#1-if-the-app-is-already-open-the-app-is-foregrounded-and-a-linking-event-is-fired  ,getInitialURL 方法
 import { View, Text, Linking } from 'react-native'
 
-
 Linking.getInitialURL().then((url) => {
     //  url即 demo://ch?id=123 
     if (url) {
