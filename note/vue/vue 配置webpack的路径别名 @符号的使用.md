@@ -27,10 +27,10 @@ module.exports = {
 ```vue
 <template>
     <div class="">
-		123
-		<SubmitBtn />
-		<!-- <img :src="imgUrl" alt="" srcset=""> -->
-		<img src="@config/ciricle.png" alt="">
+    	123
+        <SubmitBtn />
+        <!-- <img :src="imgUrl" alt="" srcset=""> -->
+        <img src="@config/ciricle.png" alt="">
     </div>
 </template>
 
@@ -41,12 +41,12 @@ import SubmitBtn from '@/components/SubmitBtn'
 export default {
     data() {
         return {
-			imgUrl: require('@/assets/logo.png')
+            imgUrl: require('@/assets/logo.png')
         }
-	},
-	components: {
-		SubmitBtn
-	},
+    },
+    components: {
+    	SubmitBtn
+    },
     mounted() {
 
     },
