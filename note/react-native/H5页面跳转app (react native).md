@@ -14,27 +14,27 @@ jump() {
 
 ```java
 <activity
-        android:name=".MainActivity"
-        android:label="@string/app_name"
-        android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
-        android:launchMode="singleTask"
-        android:windowSoftInputMode="adjustResize">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-        <!-- 添加下面这一段代码 注意host,pathPrefix（这个不清楚怎么用）,scheme都是自己自定义的，只要与h5页面调用的一致即可-->
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
+	android:name=".MainActivity"
+	android:label="@string/app_name"
+	android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
+	android:launchMode="singleTask"
+	android:windowSoftInputMode="adjustResize">
+	<intent-filter>
+		<action android:name="android.intent.action.MAIN" />
+		<category android:name="android.intent.category.LAUNCHER" />
+	</intent-filter>
+	<!-- 添加下面这一段代码 注意host,pathPrefix（这个不清楚怎么用）,scheme都是自己自定义的，只要与h5页面调用的一致即可-->
+	<intent-filter>
+		<action android:name="android.intent.action.VIEW" />
 
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
+		<category android:name="android.intent.category.DEFAULT" />
+		<category android:name="android.intent.category.BROWSABLE" />
 
-            <data
-                android:host="ch"
-                android:scheme="demo" />
-        </intent-filter>
-      </activity>
+		<data
+			android:host="ch"
+			android:scheme="demo" />
+	</intent-filter>
+</activity>
 ```
 
 ### RN端获取h5传的参数
@@ -43,23 +43,22 @@ jump() {
 //https://reactnative.cn/docs/linking#1-if-the-app-is-already-open-the-app-is-foregrounded-and-a-linking-event-is-fired  ,getInitialURL 方法
 import { View, Text, Linking } from 'react-native'
 
-
 Linking.getInitialURL().then((url) => {
-			//  url即 demo://ch?id=123 
-            if (url) {
-            	//	这里要注意跳转后再点击返回的问题  最好重置一下页面栈
-                //  NavigationService.customReset(1, 
-                //   [{ name: 'HomeTabIndex' },{ name: 'Collect' }]
-                //)
-                this.props.navigation.navigate('Collect')
-            } else {
-                if (user.token) {
-                    // navigation.navigate('HomeTabIndex')
-                    navigation.navigate('Lock')
-                } else {
-                    navigation.navigate('LoginIndex')
-                }
-            }
+	//  url即 demo://ch?id=123 
+	if (url) {
+		//	这里要注意跳转后再点击返回的问题  最好重置一下页面栈
+		//  NavigationService.customReset(1, 
+		//   [{ name: 'HomeTabIndex' },{ name: 'Collect' }]
+		//)
+		this.props.navigation.navigate('Collect')
+	} else {
+		if (user.token) {
+			// navigation.navigate('HomeTabIndex')
+			navigation.navigate('Lock')
+		} else {
+			navigation.navigate('LoginIndex')
+		}
+	}
 }).catch(err => console.error('An error occurred', err));
 
 
