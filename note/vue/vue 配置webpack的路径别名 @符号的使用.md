@@ -5,29 +5,26 @@ const path = require('path');
 function resolve (dir) {//自己定义的函数
     return path.join(__dirname, dir)
 }
-
-
-
 module.exports = {
-	lintOnSave: false,//关闭eslint 保存时检测
-	configureWebpack: {
-		resolve: {
+    lintOnSave: false,//关闭eslint 保存时检测
+    configureWebpack: {
+        resolve: {
             extensions: ['.js', '.vue', '.json'],
             alias: {
                 '@': resolve('src'),//写法1 @代表src vue-cli中已经默认 无需配置 直接在项目使用如（@/components/HelloWorld.vue）代表src/components/HelloWorld.vue
                 // '@': path.join(__dirname, 'src'),//写法2
-				'@components': path.join(__dirname, 'src/components'),//写法3
-				'@config': path.join(__dirname, 'config')//写法4
+                '@components': path.join(__dirname, 'src/components'),//写法3
+                '@config': path.join(__dirname, 'config')//写法4
                 '@img': path.join(__dirname, 'src/assets/img')// 写法5 配置图片的默认路径 <img src="@img/1.png" alt="">
             }
         },
-	}
+    }
 }
 ```
 
 ### 具体使用场景About.vue
 
-```javascript
+```vue
 <template>
     <div class="">
 		123
