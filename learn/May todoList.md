@@ -4,7 +4,7 @@
 
 ✅已复盘，并理解   ❌没有理解
 
-### 总结 5.10  已复盘✅✅✅
+### 总结 5.10  已复盘✅✅✅✅
 
 - post-css Autoprefixer 自动补全css浏览器前缀 
     https://blog.csdn.net/weixin_44388523/article/details/106957559
@@ -23,7 +23,7 @@
 
     
 
-### 总结 5.14 已复盘✅✅✅
+### 总结 5.14 已复盘✅✅✅✅
 
 - 最佳全局挂载方式（Object.defineProperty）
 
@@ -86,6 +86,10 @@
 - [JavaScript深入之从原型到原型链](https://github.com/mqyqingfeng/Blog/issues/2)	
     原型链，构造函数和对象 (主要去理解原型链那一张图)
     
+    ![s6PWvQ.jpg](https://raw.githubusercontent.com/mqyqingfeng/Blog/master/Images/prototype5.png)
+    
+    
+    
     [js中的类和constructor](https://www.jianshu.com/p/5c501677b5b8)
 ```javascript
     function Person() {
@@ -119,7 +123,7 @@
     
     [js中对象的constructor属性及其作用](https://blog.csdn.net/summer199605/article/details/88700382)
     
-    ```javascript
+```javascript
     // 例子一
     console.log(foo);
     var foo = 1;
@@ -128,7 +132,7 @@
     
     执行顺序：
     foo() 			  //函数提升
-    var foo			  //和函数重名了，被忽略
+var foo			  //和函数重名了，被忽略
     console.log(foo);	  //打印函数
     foo = 1;		  //全局变量foo
     console.log(foo);	  //打印1，事实上函数foo已经不存在了，变成了1
@@ -159,8 +163,8 @@
     console.log(bar); 	// 456
     
     // 注意*：函数声明和函数表达式是有区别的 https://www.cnblogs.com/gaoht/p/10401863.html
-    ```
-    
+```
+
 - Vue.observable小型状态管理 https://segmentfault.com/a/1190000019292569
 
 - Vue.mixin 除了生命周期钩子函数不会合并(先触发混入对象，看下面例子)，其他所有配置已组件对象本身为主
@@ -183,6 +187,7 @@
     // => "混入对象的钩子被调用"
     // => "组件钩子被调用"
     ```
+
     
     
 
@@ -226,15 +231,18 @@
         };
     },
     ```
-    
+
     ```javascript
-    this一般有几种调用场景
-    var obj = {a: 1, b: function(){console.log(this);}}
-    1、作为对象调用时，指向该对象 obj.b(); // 指向obj
-    2、作为函数调用, var b = obj.b; b(); // 指向全局window
-    3、作为构造函数调用 var b = new Fun(); // this指向当前实例对象
-    4、作为call与apply调用 obj.b.apply(object, []); // this指向当前的object
+    // this一般有几种调用场景
+        var obj = {a: 1, b: function(){console.log(this);}}
+        1、作为对象调用时，指向该对象 obj.b(); // 指向obj
+        2、作为函数调用, var b = obj.b; b(); // 指向全局window
+        3、作为构造函数调用 var b = new Fun(); // this指向当前实例对象
+        4、作为call与apply调用 obj.b.apply(object, []); // this指向当前的object
     ```
+
+
+
 
 
 
@@ -277,6 +285,7 @@
     alert(object.getNameFunc()());// The Window
     ```
 
+
 ### 总结5.25✅
 
 - [JavaScript深入之参数按值传递](https://github.com/mqyqingfeng/Blog/issues/10)
@@ -293,6 +302,8 @@
     思考：context.fn = this;  为什么方法里面调用方法,的this 为方法本身呢？
 
     https://github.com/mqyqingfeng/Blog/issues/11#issuecomment-353509920
+    
+    
     
     ```javascript
     function Person() {
@@ -323,6 +334,103 @@
     bar.call2(foo, 'kevin', 18);
     ```
     
+    call与apply的唯一的区别就是，它接收一个数组作为函数执行时的参数
+    
+    bind与（call或者apply）的区别 bind方法用于将函数体内的this绑定到某个对象，然后返回一个新函数。
+    
+    使用场景如下 摘自[阮一峰javascript标准参考](http://javascript.ruanyifeng.com/oop/this.html#toc3)
+    
+    ```javascript
+    // 使用场景一
+    
+    var o = new Object();
+    o.f = function () {
+      console.log(this === o);
+    }
+    
+    // jQuery 的写法
+    $('#button').on('click', o.f);
+    // 上面代码中，点击按钮以后，控制台会显示false。原因是此时this不再指向o对象，而是指向按钮的 DOM 对象，因为f方法是在按钮对象的环境中被调用的。这种细微的差别，很容易在编程中忽视，导致难以察觉的错误。
+    
+    // 解决办法
+    // 1.用call或者apply
+    var o = new Object();
+    
+    o.f = function () {
+      console.log(this === o);
+    }
+    
+    var f = function (){
+      o.f.apply(o);
+      // 或者 o.f.call(o);
+    };
+    
+    // jQuery 的写法
+    $('#button').on('click', f);
+    // 上面代码中，点击按钮以后，控制台将会显示true。由于apply方法（或者call方法）不仅绑定函数执行时所在的对象，还会立即执行函数，因此不得不把绑定语句写在一个函数体内
+    
+    // 2.bind解决
+    var o = new Object();
+    
+    o.f = function () {
+      console.log(this === o);
+    }
+    
+    var f = o.f.bind(o)
+    // jQuery 的写法
+    $('#button').on('click', f); //这里不能直接写在里面click事件绑定bind方法生成的一个匿名函数。这样会导致无法取消绑定 需要var f = o.f.bind(o) 在放入
+    var d = new Date();
+    d.getTime() // 1481869925657
+    
+    var f = function(){
+    d.getTime.call(d)
+    };
+    f() 
+    
+    ```
+    
+    ```javascript
+    // 使用场景二
+    var d = new Date();
+    d.getTime() // 1481869925657
+    
+    var print = d.getTime;
+    print() // Uncaught TypeError: this is not a Date object.
+    // 上面代码中，我们将d.getTime方法赋给变量print，然后调用print就报错了。这是因为getTime方法内部的this，绑定Date对象的实例，赋给变量print以后，内部的this已经不指向Date对象的实例了。
+    
+    // 1.用bind
+    var d = new Date();
+    d.getTime() // 1481869925657
+    
+    var print = d.getTime.bind(d);
+    print() // 1481869925657
+    
+    
+    // 2.用call或者apply
+    var d = new Date();
+    d.getTime() // 1481869925657
+    
+    var print = function(){
+       return d.getTime.call(d) //这里要return 因为call是会立即执行的 而bind会自动返回一个绑定好的函数
+    };
+    print() // 1481869925657
+    ```
+    
+    ```javascript
+    // 使用场景三
+    var counter = {
+      count: 0,
+      inc: function () {
+        this.count++;
+      }
+    };
+    
+    var func = counter.inc.bind(counter);
+    // 或者 var func = () => counter.inc.call(counter)  用call、apply需要 return 返回
+    func();
+    counter.count // 1
+    ```
+    
     
 
 
@@ -345,7 +453,7 @@
     
     // 看 JavaScript深入之类数组对象与arguments  https://github.com/mqyqingfeng/Blog/issues/14
     
-    ```
+	```
 
 
 
