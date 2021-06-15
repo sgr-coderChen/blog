@@ -304,7 +304,7 @@
     原理：1.将函数设为对象的属性   2.执行该函数  3.删除该函数
 
     ```javascript
-// 第一版
+	// 第一版
     Function.prototype.call2 = function(context) {
         // 首先要获取调用call的函数，用this可以获取
         context.fn = this;
