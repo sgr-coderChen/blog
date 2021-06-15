@@ -23,7 +23,7 @@
 
     
 
-### 总结 5.14 已复盘✅✅✅✅
+### 总结 5.14 已复盘✅✅✅✅✅
 
 - 最佳全局挂载方式（Object.defineProperty）
 
@@ -81,12 +81,16 @@
 
 
 
-### 总结 5.19✅✅
+### 总结 5.19✅✅✅✅
 
 - [JavaScript深入之从原型到原型链](https://github.com/mqyqingfeng/Blog/issues/2)	
-    原型链，构造函数和对象 (主要去理解原型链那一张图)
+    原型链，构造函数和对象 (主要去理解原型链那一张图，蓝色的就是原型链)
     
-    ![s6PWvQ.jpg](https://raw.githubusercontent.com/mqyqingfeng/Blog/master/Images/prototype5.png)
+     __proto__
+    
+    其次是 __proto__ ，绝大部分浏览器都支持这个非标准的方法访问原型，然而它并不存在于 Person.prototype 中，实际上，它是来自于 Object.prototype ，与其说是一个属性，不如说是一个 getter/setter，当使用 obj.__proto__ 时，可以理解成返回了 Object.getPrototypeOf(obj)。
+    
+- [![2bslCT.png](https://z3.ax1x.com/2021/06/15/2bslCT.png)](https://imgtu.com/i/2bslCT)
     
     
     
@@ -132,7 +136,7 @@
     
     执行顺序：
     foo() 			  //函数提升
-var foo			  //和函数重名了，被忽略
+	var foo			  //和函数重名了，被忽略
     console.log(foo);	  //打印函数
     foo = 1;		  //全局变量foo
     console.log(foo);	  //打印1，事实上函数foo已经不存在了，变成了1
@@ -191,7 +195,7 @@ var foo			  //和函数重名了，被忽略
     
     
 
-### 总结 5.20✅✅
+### 总结 5.20✅✅✅✅
 
 - JavaScript专题之跟着underscore学防抖
 
@@ -246,7 +250,7 @@ var foo			  //和函数重名了，被忽略
 
 
 
-### 总结5.24✅
+### 总结5.24✅✅✅
 
 - this的指向问题结合思考题  http://javascript.ruanyifeng.com/oop/this.html#toc3
 
@@ -286,7 +290,7 @@ var foo			  //和函数重名了，被忽略
     ```
 
 
-### 总结5.25✅
+### 总结5.25✅✅✅
 
 - [JavaScript深入之参数按值传递](https://github.com/mqyqingfeng/Blog/issues/10)
 
@@ -299,8 +303,29 @@ var foo			  //和函数重名了，被忽略
 
     原理：1.将函数设为对象的属性   2.执行该函数  3.删除该函数
 
+    ```javascript
+// 第一版
+    Function.prototype.call2 = function(context) {
+        // 首先要获取调用call的函数，用this可以获取
+        context.fn = this;
+        context.fn();
+        delete context.fn;
+    }
+    
+    // 测试一下
+    var foo = {
+        value: 1
+    };
+    
+    function bar() {
+        console.log(this.value);
+    }
+    
+    bar.call2(foo); // 1
+    ```
+    
     思考：context.fn = this;  为什么方法里面调用方法,的this 为方法本身呢？
-
+    
     https://github.com/mqyqingfeng/Blog/issues/11#issuecomment-353509920
     
     
@@ -379,13 +404,7 @@ var foo			  //和函数重名了，被忽略
     var f = o.f.bind(o)
     // jQuery 的写法
     $('#button').on('click', f); //这里不能直接写在里面click事件绑定bind方法生成的一个匿名函数。这样会导致无法取消绑定 需要var f = o.f.bind(o) 在放入
-    var d = new Date();
-    d.getTime() // 1481869925657
     
-    var f = function(){
-    d.getTime.call(d)
-    };
-    f() 
     
     ```
     
@@ -394,9 +413,21 @@ var foo			  //和函数重名了，被忽略
     var d = new Date();
     d.getTime() // 1481869925657
     
+    
+    
     var print = d.getTime;
     print() // Uncaught TypeError: this is not a Date object.
     // 上面代码中，我们将d.getTime方法赋给变量print，然后调用print就报错了。这是因为getTime方法内部的this，绑定Date对象的实例，赋给变量print以后，内部的this已经不指向Date对象的实例了。
+    
+    // print（）报错的解释
+    function Date () {// 伪代码
+        currentTime: '65165156156156'
+        getTime: function() {
+            return this.currentTime
+        }
+    }
+    // 当赋值给print时 堆中的getTime方法指针已经指向了print 所以去执行getTime的时候，里面的this.currentTime为print.currentTime 所以需要给getTime方法重新绑定上Date实例
+    
     
     // 1.用bind
     var d = new Date();
@@ -435,7 +466,7 @@ var foo			  //和函数重名了，被忽略
 
 
 
-### 总结5.26✅
+### 总结5.26✅✅
 
 - [JavaScript深入之new的模拟实现](https://github.com/mqyqingfeng/Blog/issues/13)❌
 
@@ -463,7 +494,7 @@ var foo			  //和函数重名了，被忽略
 
 
 
-### 总结 5.27
+### 总结 5.27✅✅
 
 1. Babel是一个广泛使用的 ES6 转码器
 
@@ -478,16 +509,26 @@ var foo			  //和函数重名了，被忽略
 
 3. const 对于对象属性可修改 ，const let 不会去修改顶层对象的属性
 
+    ```javascript
+    var a = 1;
+    // 如果在 Node 的 REPL 环境，可以写成 global.a
+    // 或者采用通用方法，写成 this.a
+    window.a // 1
+    
+    let b = 1;
+    window.b // undefined
+    ```
+
 4. 解构设置函数参数的默认值
 
     ```javascript
     // 写法一
-    function m1({x = 0, y = 0} = {}) {
+    function m1({x = 0, y = 0} = {}) {//设定整个默认值为一个对象
       return [x, y];
     }
     
     // 写法二
-    function m2({x, y} = { x: 0, y: 0 }) {
+    function m2({x, y} = { x: 0, y: 0 }) {//设置对象中具体属性 x y的默认值
       return [x, y];
     }
     // 上面两种写法都对函数的参数设定了默认值，区别是写法一函数参数的默认值是空对象，但是设置了对象解构赋值的默认值；写法二函数参数的默认值是一个有具体属性的对象，但是没有设置对象解构赋值的默认值。
@@ -577,7 +618,7 @@ var foo			  //和函数重名了，被忽略
     'aabbcc'.replaceAll('b', '_')
     // 'aa__cc' replaceAll  ES6方法
     ```
-    
+
  6. 箭头函数❌
 
     ```javascript

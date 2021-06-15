@@ -10,7 +10,11 @@
 
 
 
-### 总结 6.1
+
+
+# 数组扩展✅
+
+
 
 **Array.from** 
 
@@ -202,7 +206,7 @@ ages.some(x => x>= 18) // true
 
 
 
-### 对象的扩展
+# 对象的扩展✅
 
 1. 对象简写
 
@@ -250,7 +254,7 @@ Object.getOwnPropertyDescriptor(obj, 'foo')
 
 描述对象的`enumerable`属性，称为“可枚举性”，如果该属性为`false`，就表示某些操作会忽略当前属性。
 
-有四个操作会忽略`enumerable`为`false`的属性（如果为false则不会遍历该条属性）
+有四个操作会跳过`enumerable`为`false`的属性（如果为false则不会遍历该条属性）
 
 - `for...in`循环：只遍历对象自身的和继承的可枚举的属性。
 - `Object.keys()`：返回对象自身的所有可枚举的属性的键名。
@@ -326,15 +330,46 @@ Object.setPrototypeOf(obj, proto);
 obj.foo() // "world"
 
 // 上面代码中，super.foo指向原型对象proto的foo方法，但是绑定的this却还是当前对象obj，因此输出的就是world。
+
+
 ```
 
-Object.create()方法创建一个新对象，使用现有的对象来提供新创建的对象的__proto__
+
+
+Object.setPrototypeOf扩展
+
+```javascript
+// !!!注意这里不要和this的指向搞混  call，apply都是改变this指向 Object.setPrototypeOf是改变原型指向
+
+var obj1 = {a:"asfssdf",b:121111,c:[1,2,3]};
+var obj2 = {d:["sdf",111,"ok"],e:999};
+Object.setPrototypeOf(obj1,obj2);//将obj1原型设置为obj2
+for(item in obj1){console.log(item)}//a b c d e
+```
+
+![结果图](https://upload-images.jianshu.io/upload_images/9628812-84f2f25cbe34c0bc.png?imageMogr2/auto-orient/strip|imageView2/2/w/700/format/webp)
+
+
+
+
 
 Object.getPrototypeOf(obj) 
 
 - 返回指定对象的原型（内部`[[Prototype]]`属性的值）。
 - obj：要返回其原型的对象。
 - 返回值：给定对象的原型。如果没有继承属性，则返回 null 。
+
+```javascript
+var proto = {};
+var obj = Object.create(proto);// Object.create创建的是对象的__proto__
+Object.getPrototypeOf(obj) === proto; // true
+ 
+var reg = /a/;
+Object.getPrototypeOf(reg) === RegExp.prototype; // true
+Object.getPrototypeOf(new Date()) === Date.prototype // true
+```
+
+Object.create()方法创建一个新对象，使用现有的对象来提供新创建的对象的__proto__
 
 [关于创建对象的三种写法 ---- 字面量,new构造器和Object.create()](https://segmentfault.com/a/1190000019914240)
 
@@ -354,7 +389,7 @@ console.log(c)
 
 ```javascript
 {...'hello'} // => {0: "h", 1: "e", 2: "l", 3: "l", 4: "o"}
-[...'hellow'] // => ["h", "e", "l", "l", "o"]
+[...'hello'] // => ["h", "e", "l", "l", "o"]
 
 // 对象的扩展运算符等同于使用Object.assign()方法。
 let aClone = { ...a };
@@ -366,6 +401,18 @@ const obj = {
   ...(x > 1 ? {a: 1} : {}),
   b: 2,
 };
+```
+
+**注意：** `Object.assign()`无法正确拷贝对象的`get`属性和`set`属性
+
+```javascript
+var a = {
+   set foo(value) {
+    console.log(value);
+  }
+}
+console.log({...a}) //{foo: undefined}
+
 ```
 
 
@@ -396,6 +443,389 @@ if (myForm.checkValidity?.() === false) {
 }
 // 上面代码中，老式浏览器的表单可能没有checkValidity这个方法，这时?.运算符就会返回undefined，判断语句就变成了undefined === false，所以就会跳过下面的代码。
 ```
+
+
+
+### [`__proto__`属性](https://es6.ruanyifeng.com/?search=rest&x=0&y=0#docs/object-methods)
+
+`__proto__`属性（前后各两个下划线），用来读取或设置当前对象的原型对象（prototype）。目前，所有浏览器（包括 IE11）都部署了这个属性。
+
+```javascript
+// es5 的写法
+const obj = {
+  method: function() { ... }
+};
+obj.__proto__ = someOtherObj;
+
+// es6 的写法
+var obj = Object.create(someOtherObj);
+obj.method = function() { ... };
+```
+
+
+
+从兼容性的角度，都不要使用`__proto__`这个属性，而是使用下面的`Object.setPrototypeOf()`（写操作）、`Object.getPrototypeOf()`（读操作）、`Object.create()`（生成操作）代替。
+
+
+
+`Object.keys`配套的`Object.values`和`Object.entries`，作为遍历一个对象的补充手段，供`for...of`循环使用。
+
+```javascript
+let {keys, values, entries} = Object;
+let obj = { a: 1, b: 2, c: 3 };
+
+for (let key of keys(obj)) {
+  console.log(key); // 'a', 'b', 'c'
+}
+
+for (let value of values(obj)) {
+  console.log(value); // 1, 2, 3
+}
+
+for (let [key, value] of entries(obj)) {
+  console.log([key, value]); // ['a', 1], ['b', 2], ['c', 3]
+}
+```
+
+
+
+`Object.entries()`方法返回一个数组，成员是参数对象自身的（不含继承的）所有可遍历（enumerable）属性的键值对数组。
+
+```javascript
+const obj = { foo: 'bar', baz: 42 };
+Object.entries(obj)
+// [ ["foo", "bar"], ["baz", 42] ]
+
+
+// `Object.entries`方法的另一个用处是，将对象转为真正的`Map`结构。
+const obj = { foo: 'bar', baz: 42 };
+const map = new Map(Object.entries(obj));
+map // Map { foo: "bar", baz: 42 } 
+
+```
+
+`Object.fromEntries()`方法是`Object.entries()`的逆操作，用于将一个键值对数组转为对象
+
+```javascript
+// 例一
+const entries = new Map([
+  ['foo', 'bar'],
+  ['baz', 42]
+]);
+
+Object.fromEntries(entries)
+// { foo: "bar", baz: 42 }
+
+// 例二
+const map = new Map().set('foo', true).set('bar', false);
+Object.fromEntries(map)
+// { foo: true, bar: false }
+```
+
+该方法的一个用处是配合`URLSearchParams`对象，将查询字符串转为对象。
+
+```javascript
+Object.fromEntries(new URLSearchParams('foo=bar&baz=qux'))
+// { foo: "bar", baz: "qux" }
+```
+
+
+
+## Symbol
+
+ES5 的对象属性名都是字符串，这容易造成属性名的冲突。比如，你使用了一个他人提供的对象，但又想为这个对象添加新的方法（mixin 模式），新方法的名字就有可能与现有方法产生冲突。如果有一种机制，保证每个属性的名字都是独一无二的就好了，这样就从根本上防止属性名的冲突。
+
+```javascript
+let mySymbol = Symbol();
+
+// 第一种写法
+let a = {};
+a[mySymbol] = 'Hello!';
+
+// 第二种写法
+let a = {
+  [mySymbol]: 'Hello!'
+};
+
+// 第三种写法
+let a = {};
+Object.defineProperty(a, mySymbol, { value: 'Hello!' });
+
+// 以上写法都得到同样结果
+a[mySymbol] // "Hello!"
+```
+
+```javascript
+// 注意，Symbol 值作为对象属性名时，不能用点运算符。
+const mySymbol = Symbol();
+const a = {};
+
+a.mySymbol = 'Hello!';
+a[mySymbol] // undefined
+a['mySymbol'] // "Hello!"
+```
+
+
+
+## Set 和 Map 数据结构
+
+
+
+### set
+
+ES6 提供了新的数据结构 Set。它类似于数组，但是成员的值都是唯一的，没有重复的值。
+
+```javascript
+// 例一
+const set = new Set([1, 2, 3, 4, 4]);
+[...set]
+// [1, 2, 3, 4]
+
+// 例二
+const items = new Set([1, 2, 3, 4, 5, 5, 5, 5]);
+items.size // 5
+
+// 去除数组的重复成员
+[...new Set(array)]
+
+[...new Set('ababbc')].join('')
+// "abc"
+```
+
+在 Set 内部，两个`NaN`是相等的。但两个对象总是不相等的。
+
+- 用法
+
+```javascript
+s.add(1).add(2).add(2);
+// 注意2被加入了两次
+
+s.size // 2
+
+s.has(1) // true
+s.has(2) // true
+s.has(3) // false
+
+s.delete(2);
+s.has(2) // false
+```
+
+- 数组去重
+
+```javascript
+function dedupe(array) {
+  return Array.from(new Set(array));
+}
+
+dedupe([1, 1, 2, 3]) // [1, 2, 3]
+
+// or
+let arr = [3, 5, 2, 2, 5, 5];
+let unique = [...new Set(arr)];
+// [3, 5, 2]
+```
+
+- 并集与交集
+
+```javascript
+let a = new Set([1, 2, 3]);
+let b = new Set([4, 3, 2]);
+
+// 并集
+let union = new Set([...a, ...b]);
+// Set {1, 2, 3, 4}
+
+// 交集
+let intersect = new Set([...a].filter(x => b.has(x)));
+// set {2, 3}
+
+// （a 相对于 b 的）差集
+let difference = new Set([...a].filter(x => !b.has(x)));
+// Set {1}
+```
+
+WeakSet和set的区别：WeakSet只能放对象且不能循环遍历成员
+
+### map
+
+各种类型的值（包括对象）都可以当作键。也就是说，Object 结构提供了“字符串—值”的对应，Map 结构提供了“值—值”的对应，
+
+```javascript
+const map = new Map([
+  ['name', '张三'],
+  ['title', 'Author']
+]);
+
+map.size // 2
+map.has('name') // true
+map.get('name') // "张三"
+map.has('title') // true
+map.get('title') // "Author"
+```
+
+```javascript
+const set = new Set([
+  ['foo', 1],
+  ['bar', 2]
+]);
+const m1 = new Map(set);
+m1.get('foo') // 1
+
+const m2 = new Map([['baz', 3]]);
+const m3 = new Map(m2);
+m3.get('baz') // 3
+```
+
+
+
+```javascript
+const map = new Map();
+
+map.set(['a'], 555);
+map.get(['a']) // undefined
+```
+
+上面代码的`set`和`get`方法，表面是针对同一个键，但实际上这是两个不同的数组实例，内存地址是不一样的，因此`get`方法无法读取该键，返回`undefined`。
+
+```javascript
+const map = new Map();
+
+const k1 = ['a'];
+const k2 = ['a'];
+
+map
+.set(k1, 111)
+.set(k2, 222);
+
+map.get(k1) // 111
+map.get(k2) // 222
+```
+
+上面代码中，变量`k1`和`k2`的值是一样的，但是它们在 Map 结构中被视为两个键。
+
+Map 的键实际上是跟内存地址绑定的，只要内存地址不一样，就视为两个键
+
+Map 结构转为数组结构，比较快速的方法是使用扩展运算符（`...`）
+
+```javascript
+const map = new Map([
+  [1, 'one'],
+  [2, 'two'],
+  [3, 'three'],
+]);
+
+[...map.keys()]
+// [1, 2, 3]
+
+[...map.values()]
+// ['one', 'two', 'three']
+
+[...map.entries()]
+// [[1,'one'], [2, 'two'], [3, 'three']]
+
+[...map]
+// [[1,'one'], [2, 'two'], [3, 'three']]
+
+
+const map0 = new Map()
+  .set(1, 'a')
+  .set(2, 'b')
+  .set(3, 'c');
+
+const map1 = new Map(
+  [...map0].filter(([k, v]) => k < 3)
+);
+// 产生 Map 结构 {1 => 'a', 2 => 'b'}
+
+const map2 = new Map(
+  [...map0].map(([k, v]) => [k * 2, '_' + v])
+    );
+// 产生 Map 结构 {2 => '_a', 4 => '_b', 6 => '_c'}
+```
+
+
+
+## Proxy
+
+Proxy 可以理解成，在目标对象之前架设一层“拦截”，外界对该对象的访问，都必须先通过这层拦截，因此提供了一种机制，可以对外界的访问进行过滤和改写。Proxy 这个词的原意是代理，用在这里表示由它来“代理”某些操作，可以译为“代理器”。
+
+Proxy 对象的所有用法，都是上面这种形式，不同的只是`handler`参数的写法。其中，`new Proxy()`表示生成一个`Proxy`实例，`target`参数表示所要拦截的目标对象，`handler`参数也是一个对象，用来定制拦截行为。
+
+```javascript
+var proxy = new Proxy({}, {
+  get: function(target, propKey) {
+    return 35;
+  }
+});
+
+proxy.time // 35
+proxy.name // 35
+proxy.title // 35
+// get方法的两个参数分别是目标对象和所要访问的属性 由于拦截函数总是返回35，所以访问任何属性都得到35
+```
+
+下面是 Proxy 支持的拦截操作一览，一共 13 种。
+
+- **get(target, propKey, receiver)**：拦截对象属性的读取，比如`proxy.foo`和`proxy['foo']`。
+- **set(target, propKey, value, receiver)**：拦截对象属性的设置，比如`proxy.foo = v`或`proxy['foo'] = v`，返回一个布尔值。
+- **has(target, propKey)**：拦截`propKey in proxy`的操作，返回一个布尔值。
+- **deleteProperty(target, propKey)**：拦截`delete proxy[propKey]`的操作，返回一个布尔值。
+- **ownKeys(target)**：拦截`Object.getOwnPropertyNames(proxy)`、`Object.getOwnPropertySymbols(proxy)`、`Object.keys(proxy)`、`for...in`循环，返回一个数组。该方法返回目标对象所有自身的属性的属性名，而`Object.keys()`的返回结果仅包括目标对象自身的可遍历属性。
+- **getOwnPropertyDescriptor(target, propKey)**：拦截`Object.getOwnPropertyDescriptor(proxy, propKey)`，返回属性的描述对象。
+- **defineProperty(target, propKey, propDesc)**：拦截`Object.defineProperty(proxy, propKey, propDesc）`、`Object.defineProperties(proxy, propDescs)`，返回一个布尔值。
+- **preventExtensions(target)**：拦截`Object.preventExtensions(proxy)`，返回一个布尔值。
+- **getPrototypeOf(target)**：拦截`Object.getPrototypeOf(proxy)`，返回一个对象。
+- **isExtensible(target)**：拦截`Object.isExtensible(proxy)`，返回一个布尔值。
+- **setPrototypeOf(target, proto)**：拦截`Object.setPrototypeOf(proxy, proto)`，返回一个布尔值。如果目标对象是函数，那么还有两种额外操作可以拦截。
+- **apply(target, object, args)**：拦截 Proxy 实例作为函数调用的操作，比如`proxy(...args)`、`proxy.call(object, ...args)`、`proxy.apply(...)`。
+- **construct(target, args)**：拦截 Proxy 实例作为构造函数调用的操作，比如`new proxy(...args)`。
+
+```javascript
+var handler = {
+  get: function(target, name) {
+    if (name === 'prototype') {
+      return Object.prototype;
+    }
+    return 'Hello, ' + name;
+  },
+  // 拦截 Proxy 实例作为函数调用的操作
+  apply: function(target, thisBinding, args) {
+    return args[0];
+  },
+
+  // 拦截 Proxy 实例作为构造函数调用的操作
+  construct: function(target, args) {
+    return {value: args[1]};
+  }
+};
+
+var fproxy = new Proxy(function(x, y) {
+  return x + y;
+}, handler);
+
+fproxy(1, 2) // 1
+new fproxy(1, 2) // {value: 2}
+fproxy.prototype === Object.prototype // true
+fproxy.foo === "Hello, foo" // true
+```
+
+`get`方法用于拦截某个属性的读取操作，可以接受三个参数，依次为目标对象、属性名和 proxy 实例本身（严格地说，是操作行为所针对的对象），其中最后一个参数可选。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
