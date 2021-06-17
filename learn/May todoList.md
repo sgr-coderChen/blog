@@ -91,9 +91,9 @@
     其次是 __proto__ ，绝大部分浏览器都支持这个非标准的方法访问原型，然而它并不存在于 Person.prototype 中，实际上，它是来自于 Object.prototype ，与其说是一个属性，不如说是一个 getter/setter，当使用 obj.__proto__ 时，可以理解成返回了 Object.getPrototypeOf(obj)。
     
 - [![2bslCT.png](https://z3.ax1x.com/2021/06/15/2bslCT.png)](https://imgtu.com/i/2bslCT)
+  
     
-    
-    
+  
     [js中的类和constructor](https://www.jianshu.com/p/5c501677b5b8)
 ```javascript
     function Person() {
@@ -192,8 +192,12 @@
     // => "组件钩子被调用"
     ```
 
+    - mixin中的data属性混入不同的组件时都是独立的
+    - mixin.js中能拿到被混入组件的data，methods等等
     
-    
+       [vue中mixins的使用方法和注意点（详）](https://www.jianshu.com/p/bcff647d24ec)
+
+
 
 ### 总结 5.20✅✅✅✅
 

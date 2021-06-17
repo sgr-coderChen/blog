@@ -12,7 +12,7 @@
 
 
 
-# 数组扩展✅
+# 数组扩展✅✅
 
 
 
@@ -206,7 +206,7 @@ ages.some(x => x>= 18) // true
 
 
 
-# 对象的扩展✅
+# 对象的扩展✅✅
 
 1. 对象简写
 
@@ -264,6 +264,16 @@ Object.getOwnPropertyDescriptor(obj, 'foo')
 引入“可枚举”（`enumerable`）这个概念的最初目的，就是让某些属性可以规避掉`for...in`操作，不然所有内部属性和方法都会被遍历到。比如，对象原型的`toString`方法，以及数组的`length`属性，就通过“可枚举性”，从而避免被`for...in`遍历到。
 
 总的来说，操作中引入继承的属性会让问题复杂化，大多数时候，我们只关心对象自身的属性。所以，尽量不要用`for...in`循环，而用`Object.keys()`代替。
+
+### in关键字扩展
+
+单独使用时，in操作符会在通过对象能够访问给定属性时返回true（对象实例或者原型中存在即可）
+
+object.hasOwnProperty只在属性存在于实例中时才返回 true，因此只要 in 操作符返回 true 而 hasOwnProperty()返回 false，就可以确定属性是原型中的属性
+
+**所以 for...in循环能遍历继承原型的属性（in关键字的作用）**
+
+[in关键字参考链接](https://www.bbsmax.com/A/l1dyrY2Aze/)
 
 
 
@@ -344,7 +354,7 @@ Object.setPrototypeOf扩展
 var obj1 = {a:"asfssdf",b:121111,c:[1,2,3]};
 var obj2 = {d:["sdf",111,"ok"],e:999};
 Object.setPrototypeOf(obj1,obj2);//将obj1原型设置为obj2
-for(item in obj1){console.log(item)}//a b c d e
+for(item in obj1){console.log(item)}//a b c d e  （for in会遍历继承属性）
 ```
 
 ![结果图](https://upload-images.jianshu.io/upload_images/9628812-84f2f25cbe34c0bc.png?imageMogr2/auto-orient/strip|imageView2/2/w/700/format/webp)
@@ -531,7 +541,7 @@ Object.fromEntries(new URLSearchParams('foo=bar&baz=qux'))
 
 
 
-## Symbol
+# Symbol✅✅
 
 ES5 的对象属性名都是字符串，这容易造成属性名的冲突。比如，你使用了一个他人提供的对象，但又想为这个对象添加新的方法（mixin 模式），新方法的名字就有可能与现有方法产生冲突。如果有一种机制，保证每个属性的名字都是独一无二的就好了，这样就从根本上防止属性名的冲突。
 
@@ -567,7 +577,7 @@ a['mySymbol'] // "Hello!"
 
 
 
-## Set 和 Map 数据结构
+# Set 和 Map 数据结构✅✅
 
 
 
@@ -593,6 +603,25 @@ items.size // 5
 ```
 
 在 Set 内部，两个`NaN`是相等的。但两个对象总是不相等的。
+
+```javascript
+let set = new Set();
+let a = NaN;
+let b = NaN;
+set.add(a);
+set.add(b);
+set // Set {NaN} 两个`NaN`是相等的
+
+// 上面代码向 Set 实例添加了两次NaN，但是只会加入一个。这表明，在 Set 内部，两个NaN是相等的。
+
+let set = new Set();
+
+set.add({});
+set.size // 1
+
+set.add({});
+set.size // 2 两个对象总是不相等
+```
 
 - 用法
 
@@ -683,6 +712,17 @@ const map = new Map();
 
 map.set(['a'], 555);
 map.get(['a']) // undefined
+
+map.set(function(){}, 555);
+map.get(function(){}) // undefined
+
+map.set(true, 555);
+map.get(true) // 555
+
+map.set('a', 555);
+map.get('a') // 555
+
+// 基本类型好像可以正常获取  但是引用类型的键名内存地址不一样
 ```
 
 上面代码的`set`和`get`方法，表面是针对同一个键，但实际上这是两个不同的数组实例，内存地址是不一样的，因此`get`方法无法读取该键，返回`undefined`。
@@ -715,7 +755,7 @@ const map = new Map([
 ]);
 
 [...map.keys()]
-// [1, 2, 3]
+// [1, 2, 3]  先 运算map.keys() 在 运算扩展运算符
 
 [...map.values()]
 // ['one', 'two', 'three']
@@ -745,7 +785,7 @@ const map2 = new Map(
 
 
 
-## Proxy
+# Proxy
 
 Proxy 可以理解成，在目标对象之前架设一层“拦截”，外界对该对象的访问，都必须先通过这层拦截，因此提供了一种机制，可以对外界的访问进行过滤和改写。Proxy 这个词的原意是代理，用在这里表示由它来“代理”某些操作，可以译为“代理器”。
 
@@ -811,6 +851,205 @@ fproxy.foo === "Hello, foo" // true
 
 `get`方法用于拦截某个属性的读取操作，可以接受三个参数，依次为目标对象、属性名和 proxy 实例本身（严格地说，是操作行为所针对的对象），其中最后一个参数可选。
 
+**get方法可以继承**
+
+```javascript
+let proto = new Proxy({}, {
+  get(target, propertyKey, receiver) {
+    console.log('GET ' + propertyKey);
+    return target[propertyKey];
+  }
+});
+
+let obj = Object.create(proto);
+obj.foo // "GET foo"
+```
+
+
+
+`set`方法用来拦截某个属性的赋值操作，可以接受四个参数，依次为目标对象、属性名、属性值和 Proxy 实例本身，其中最后一个参数可选。
+
+假定`Person`对象有一个`age`属性，该属性应该是一个不大于 200 的整数，那么可以使用`Proxy`保证`age`的属性值符合要求。
+
+```javascript
+let validator = {
+  set: function(obj, prop, value) {
+    if (prop === 'age') {
+      if (!Number.isInteger(value)) {
+        throw new TypeError('The age is not an integer');
+      }
+      if (value > 200) {
+        throw new RangeError('The age seems invalid');
+      }
+    }
+
+    // 对于满足条件的 age 属性以及其他属性，直接保存
+    obj[prop] = value;
+    return true;
+  }
+};
+
+let person = new Proxy({}, validator);
+
+person.age = 100;
+
+person.age // 100
+person.age = 'young' // 报错
+person.age = 300 // 报错
+```
+
+
+
+# [Reflect](https://es6.ruanyifeng.com/?search=rest&x=0&y=0#docs/reflect)
+
+- 将`Object`对象的一些明显属于语言内部的方法（比如`Object.defineProperty`），放到`Reflect`对象上。现阶段，某些方法同时在`Object`和`Reflect`对象上部署
+
+- 修改某些`Object`方法的返回结果，让其变得更合理。比如，`Object.defineProperty(obj, name, desc)`在无法定义属性时，会抛出一个错误，而`Reflect.defineProperty(obj, name, desc)`则会返回`false`
+
+- `Reflect`对象的方法与`Proxy`对象的方法一一对应，只要是`Proxy`对象的方法，就能在`Reflect`对象上找到对应的方法。这就让`Proxy`对象可以方便地调用对应的`Reflect`方法，完成默认行为，作为修改行为的基础
+
+- 让`Object`操作都变成函数行为
+
+    ```javascript
+    // 老写法
+    'assign' in Object // true
+    
+    // 新写法
+    Reflect.has(Object, 'assign') // true
+    ```
+
+[JS的Reflect学习和应用](https://zhuanlan.zhihu.com/p/92700557)
+
+Reflect用于简化Object的原始方法
+
+```js
+var myObject = Object.create(null) // 此时myObject并没有继承Object这个原型的任何方法,因此有：
+
+myObject.hasOwnProperty === undefined // 此时myObject是没有hasOwnProperty这个方法，那么我们要如何使用呢？如下：
+
+Object.prototype.hasOwnProperty.call(myObject, 'foo') // 是不是很恐怖，写这么一大串的代码！！！！
+
+// Reflect写法
+var myObject = Object.create(null)
+Reflect.has(myObject, 'foo')
+```
+
+
+
+### 使用proxy实现观察者模式
+
+观察者模式（Observer mode）指的是函数自动观察数据对象，一旦对象有变化，函数就会自动执行。
+
+```javascript
+const person = observable({
+  name: '张三',
+  age: 20
+});
+
+function print() {
+  console.log(`${person.name}, ${person.age}`)
+}
+
+observe(print);
+person.name = '李四';
+// 输出
+// 李四, 20
+```
+
+上面代码中，数据对象`person`是观察目标，函数`print`是观察者。一旦数据对象发生变化，`print`就会自动执行。
+
+下面，使用 Proxy 写一个观察者模式的最简单实现，即实现`observable`和`observe`这两个函数。思路是`observable`函数返回一个原始对象的 Proxy 代理，拦截赋值操作，触发充当观察者的各个函数。
+
+```javascript
+const queuedObservers = new Set();
+
+const observe = fn => queuedObservers.add(fn);
+const observable = obj => new Proxy(obj, {set});
+
+function set(target, key, value, receiver) {
+  // 设置成功后返回true
+  const result = Reflect.set(target, key, value, receiver);
+  // 一旦有赋值操作 执行所有观察者函数
+  queuedObservers.forEach(observer => observer());
+  return result;
+}
+```
+
+上面代码中，先定义了一个`Set`集合，所有观察者函数都放进这个集合。然后，`observable`函数返回原始对象的代理，拦截赋值操作。拦截函数`set`之中，会自动执行所有观察者。
+
+
+
+# Promise
+
+
+
+```javascript
+const promise = new Promise(function(resolve, reject) {
+  // ... some code
+
+  if (/* 异步操作成功 */){
+    resolve(value);
+  } else {
+    reject(error);
+  }
+});
+
+promise.then(function(value) {
+  // success
+}, function(error) {
+  // failure
+});
+```
+
+
+
+```javascript
+function timeout(ms) {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, ms, 'done');
+  });
+}
+
+timeout(100).then((value) => {
+  console.log(value);
+});
+```
+
+上面代码中，`timeout`方法返回一个`Promise`实例，表示一段时间以后才会发生的结果。过了指定的时间（`ms`参数）以后，`Promise`实例的状态变为`resolved`，就会触发`then`方法绑定的回调函数。
+
+下面是一个用`Promise`对象实现的 Ajax 操作的例子。
+
+```javascript
+const getJSON = function(url) {
+  const promise = new Promise(function(resolve, reject){
+    const handler = function() {
+      if (this.readyState !== 4) {
+        return;
+      }
+      if (this.status === 200) {
+        resolve(this.response);
+      } else {
+        reject(new Error(this.statusText));
+      }
+    };
+    const client = new XMLHttpRequest();
+    client.open("GET", url);
+    client.onreadystatechange = handler;
+    client.responseType = "json";
+    client.setRequestHeader("Accept", "application/json");
+    client.send();
+
+  });
+
+  return promise;
+};
+
+getJSON("/posts.json").then(function(json) {
+  console.log('Contents: ' + json);
+}, function(error) {
+  console.error('出错了', error);
+});
+```
 
 
 
@@ -818,12 +1057,7 @@ fproxy.foo === "Hello, foo" // true
 
 
 
-
-
-
-
-
-
+todo：链式调用原理
 
 
 
