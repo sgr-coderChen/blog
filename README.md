@@ -25,3 +25,5 @@
 * [ES6模块化导出](https://github.com/sgr-coderChen/blog/issues/7)
 * [扩展运算符（...）与深浅拷贝](https://github.com/sgr-coderChen/blog/issues/14)
 
+### 学习笔记
+- <a href="learn/May todoList.md">五月JavaScript篇</a>
