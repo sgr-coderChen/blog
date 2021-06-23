@@ -12,7 +12,7 @@
 
 
 
-# 数组扩展✅✅
+# 数组扩展✅✅✅
 
 
 
@@ -202,11 +202,9 @@ var ages = [3, 10, 18, 20];
 ages.some(x => x>= 18) // true
 ```
 
-[reduce详解](https://www.jianshu.com/p/e375ba1cfc47)
 
 
-
-# 对象的扩展✅✅
+# 对象的扩展✅✅✅
 
 1. 对象简写
 
@@ -381,6 +379,10 @@ Object.getPrototypeOf(new Date()) === Date.prototype // true
 
 Object.create()方法创建一个新对象，使用现有的对象来提供新创建的对象的__proto__
 
+(即设置对象的原型)
+
+
+
 [关于创建对象的三种写法 ---- 字面量,new构造器和Object.create()](https://segmentfault.com/a/1190000019914240)
 
 ```javascript
@@ -541,7 +543,7 @@ Object.fromEntries(new URLSearchParams('foo=bar&baz=qux'))
 
 
 
-# Symbol✅✅
+# Symbol✅✅✅
 
 ES5 的对象属性名都是字符串，这容易造成属性名的冲突。比如，你使用了一个他人提供的对象，但又想为这个对象添加新的方法（mixin 模式），新方法的名字就有可能与现有方法产生冲突。如果有一种机制，保证每个属性的名字都是独一无二的就好了，这样就从根本上防止属性名的冲突。
 
@@ -577,7 +579,7 @@ a['mySymbol'] // "Hello!"
 
 
 
-# Set 和 Map 数据结构✅✅
+# Set 和 Map 数据结构✅✅✅
 
 
 
@@ -1050,6 +1052,265 @@ getJSON("/posts.json").then(function(json) {
   console.error('出错了', error);
 });
 ```
+
+Promise 对象后面要跟`catch()`方法，这样可以处理 Promise 内部发生的错误。`catch()`方法返回的还是一个 Promise 对象，因此后面还可以接着调用`then()`方法。
+
+
+
+### Promise.all()
+
+```javascript
+// 生成一个Promise对象的数组
+const promises = [2, 3, 5, 7, 11, 13].map(function (id) {
+  return getJSON('/post/' + id + ".json");
+});
+
+Promise.all(promises).then(function (posts) {
+  // ...
+}).catch(function(reason){
+  // ...
+});
+```
+
+上面代码中，`promises`是包含 6 个 Promise 实例的数组，只有这 6 个实例的状态都变成`fulfilled`，或者其中有一个变为`rejected`，才会调用`Promise.all`方法后面的回调函数。
+
+### Promise.race()
+
+```javascript
+const p = Promise.race([p1, p2, p3]);
+```
+
+上面代码中，只要`p1`、`p2`、`p3`之中有一个实例率先改变状态，`p`的状态就跟着改变。那个率先改变的 Promise 实例的返回值，就传递给`p`的回调函数。
+
+```javascript
+const p = Promise.race([
+  fetch('/resource-that-may-take-a-while'),
+  new Promise(function (resolve, reject) {
+    setTimeout(() => reject(new Error('request timeout')), 5000)
+  })
+]);
+
+p
+.then(console.log)
+.catch(console.error);
+// 注意： fetch也是基于Promise的 所以可以放在里面
+```
+
+上面代码中，如果 5 秒之内`fetch`方法无法返回结果，变量`p`的状态就会变为`rejected`，从而触发`catch`方法指定的回调函数。
+
+
+
+### Promise.allSettled()
+
+`Promise.allSettled()`方法接受一组 Promise 实例作为参数，包装成一个新的 Promise 实例。只有等到所有这些参数实例都返回结果，不管是`fulfilled`还是`rejected`，包装实例才会结束
+
+```javascript
+const promises = [
+  fetch('/api-1'),
+  fetch('/api-2'),
+  fetch('/api-3'),
+];
+
+await Promise.allSettled(promises);
+removeLoadingIndicator();
+```
+
+上面代码对服务器发出三个请求，等到三个请求都结束，不管请求成功还是失败，加载的滚动图标就会消失。
+
+```javascript
+const resolved = Promise.resolve(42);
+const rejected = Promise.reject(-1);
+
+const allSettledPromise = Promise.allSettled([resolved, rejected]);
+
+allSettledPromise.then(function (results) {
+  console.log(results);
+});
+// [
+//    { status: 'fulfilled', value: 42 },
+//    { status: 'rejected', reason: -1 }
+// ]
+```
+
+
+
+### Promise.allSettled()与Promise.all()的区别
+
+- all方法必须全部成功或者有一个失败
+- allSettled方法不关心成功与否 ，只关心是否全部请求完毕
+
+```javascript
+const urls = [ /* ... */ ];
+const requests = urls.map(x => fetch(x));
+
+try {
+  await Promise.all(requests);
+  console.log('所有请求都成功。');
+} catch {
+  console.log('至少一个请求失败，其他请求可能还没结束。');
+}
+```
+
+上面代码中，`Promise.all()`无法确定所有请求都结束。想要达到这个目的，写起来很麻烦，有了`Promise.allSettled()`，这就很容易了。
+
+
+
+# [Event Loop](http://www.ruanyifeng.com/blog/2014/10/event-loop.html)
+
+
+
+![](http://www.ruanyifeng.com/blogimg/asset/2014/bg2014100802.png)
+
+
+
+上图中，主线程运行的时候，产生堆（heap）和栈（stack），栈中的代码调用各种外部API，它们在"任务队列"中加入各种事件（click，load，done）。只要栈中的代码执行完毕，主线程就会去读取"任务队列"，依次执行那些事件所对应的回调函数。
+
+
+
+```javascript
+var req = new XMLHttpRequest();
+req.open('GET', url);    
+req.onload = function (){};    
+req.onerror = function (){};    
+req.send();
+
+// 等同于
+var req = new XMLHttpRequest();
+req.open('GET', url);
+req.send();
+req.onload = function (){};    
+req.onerror = function (){};   
+
+// 回调函数的部分（onload和onerror）是异步的
+```
+
+
+
+setTimeout()只是将事件插入了"任务队列"，必须等到当前代码（执行栈）执行完，主线程才会去执行它指定的回调函数。要是当前代码耗时很长，有可能要等很久，所以并没有办法保证，回调函数一定会在setTimeout()指定的时间执
+
+# [微任务、宏任务与Event-Loop](https://juejin.cn/post/6844903657264136200)
+
+```js
+setTimeout(_ => console.log(4)) //宏任务
+
+new Promise(resolve => {
+  resolve()
+  console.log(1) //这里是同步 
+}).then(_ => {
+  console.log(3) // 微任务
+})
+
+console.log(2)
+// 1 2 3 4
+```
+
+`setTimeout`就是作为宏任务来存在的，而`Promise.then`则是具有代表性的微任务，上述代码的执行顺序就是按照序号来输出的。
+
+**所有会进入的异步都是指的事件回调中的那部分代码**
+ 也就是说`new Promise`在实例化的过程中所执行的代码都是同步进行的，而`then`中注册的回调才是异步执行的。
+ 在同步代码执行完成后才回去检查是否有异步任务完成，并执行对应的回调，而微任务又会在宏任务之前执行。
+ 所以就得到了上述的输出结论`1、2、3、4`。
+
+```js
+// +部分表示同步执行的代码 -表示异步
++setTimeout(_ => {
+-  console.log(4)
++})
+
++new Promise(resolve => {
++  resolve()
++  console.log(1)
++}).then(_ => {
+-  console.log(3)
++})
+
++console.log(2)
+
+```
+
+- 完成一个宏任务+里边的N多微任务为一次事件循环。
+
+
+
+# Iterator
+
+主要是数组（`Array`）和对象（`Object`），ES6 又添加了`Map`和`Set`。这样就有了四种数据集合，用户还可以组合使用它们，定义自己的数据结构，比如数组的成员是`Map`，`Map`的成员是对象。这样就需要一种统一的接口机制，来处理所有不同的数据结构
+
+```javascript
+var it = makeIterator(['a', 'b']);
+
+it.next() // { value: "a", done: false }
+it.next() // { value: "b", done: false }
+it.next() // { value: undefined, done: true }
+
+function makeIterator(array) {
+  var nextIndex = 0;
+  return {
+    next: function() {
+      return nextIndex < array.length ?
+        {value: array[nextIndex++], done: false} :
+        {value: undefined, done: true};
+    }
+  };
+}
+```
+
+- 只要某个数据结构部署了 Iterator 接口，就可以对它使用扩展运算符，将其转为数组
+- for...of 无法直接遍历对象 ，需要在对象提供Iterator 接口（一般用object.keys()转成数组）
+
+```javascript
+iterator.next() // 指针对象的next循环方法
+iterator.return()// return()方法的使用场合是，如果for...of循环提前退出（通常是因为出错，或者有break语句），就会调用return()方法。如果一个对象在完成遍历前，需要清理或释放资源，就可以部署return()方法。
+
+
+```
+
+
+
+### `for...of`循环
+
+一个数据结构只要部署了`Symbol.iterator`属性，就被视为具有 iterator 接口，就可以用`for...of`循环遍历它的成员。也就是说，`for...of`循环内部调用的是数据结构的`Symbol.iterator`方法。
+
+`for...of`循环可以使用的范围包括数组、Set 和 Map 结构、某些类似数组的对象（比如`arguments`对象、DOM NodeList 对象）、后文的 Generator 对象，以及字符串。
+
+
+
+```javascript
+const arr = ['red', 'green', 'blue'];
+
+for(let v of arr) {
+  console.log(v); // red green blue
+}
+
+const obj = {};
+obj[Symbol.iterator] = arr[Symbol.iterator].bind(arr);
+
+for(let v of obj) {
+  console.log(v); // red green blue
+}
+```
+
+上面代码中，空对象`obj`部署了数组`arr`的`Symbol.iterator`属性，结果`obj`的`for...of`循环，产生了与`arr`完全一样的结果。
+
+JavaScript 原有的`for...in`循环，只能获得对象的键名，不能直接获取键值。ES6 提供`for...of`循环，允许遍历获得键值。
+
+```javascript
+var arr = ['a', 'b', 'c', 'd'];
+
+for (let a in arr) {
+  console.log(a); // 0 1 2 3
+}
+
+for (let a of arr) {// 键值
+  console.log(a); // a b c d
+}
+
+for (let a of arr.keys()) {// 索引
+  console.log(a); // 0 1 2 3 
+}
+```
+
+
 
 
 

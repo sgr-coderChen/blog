@@ -81,7 +81,7 @@
 
 
 
-### 总结 5.19✅✅✅✅
+### 总结 5.19✅✅✅✅✅
 
 - [JavaScript深入之从原型到原型链](https://github.com/mqyqingfeng/Blog/issues/2)	
     原型链，构造函数和对象 (主要去理解原型链那一张图，蓝色的就是原型链)
@@ -199,7 +199,7 @@
 
 
 
-### 总结 5.20✅✅✅✅
+### 总结 5.20✅✅✅✅✅
 
 - JavaScript专题之跟着underscore学防抖
 
@@ -254,7 +254,7 @@
 
 
 
-### 总结5.24✅✅✅
+### 总结5.24✅✅✅✅
 
 - this的指向问题结合思考题  http://javascript.ruanyifeng.com/oop/this.html#toc3
 
@@ -294,7 +294,7 @@
     ```
 
 
-### 总结5.25✅✅✅
+### 总结5.25✅✅✅✅
 
 - [JavaScript深入之参数按值传递](https://github.com/mqyqingfeng/Blog/issues/10)
 
@@ -363,9 +363,22 @@
     bar.call2(foo, 'kevin', 18);
     ```
     
-    call与apply的唯一的区别就是，它接收一个数组作为函数执行时的参数
+    - call与apply的唯一的区别就是，它接收一个数组作为函数执行时的参数
     
-    bind与（call或者apply）的区别 bind方法用于将函数体内的this绑定到某个对象，然后返回一个新函数。
+    - call和apply不仅绑定函数执行时所在的对象，还会立即执行函数
+    
+        ```js
+        var o = new Object();
+        
+        o.f = function () {
+          console.log(this === o);
+        }
+        o.f.apply(o); // 一旦掉用 直接输出了 console.log(this === o); 因为apply源码中就是 赋值this 调用fn 删除fn，所以需要放到一个函数体内
+        ```
+    
+        
+    
+    - bind与（call或者apply）的区别 bind方法用于将函数体内的this绑定到某个对象，然后返回一个新函数。
     
     使用场景如下 摘自[阮一峰javascript标准参考](http://javascript.ruanyifeng.com/oop/this.html#toc3)
     
@@ -391,7 +404,7 @@
     
     var f = function (){
       o.f.apply(o);
-      // 或者 o.f.call(o);
+      // 或者 o.f.call(o);  如果不绑定函数内部的this，谁调用 this就指向谁（button DOM），所以要进行绑定this
     };
     
     // jQuery 的写法
@@ -470,24 +483,51 @@
 
 
 
-### 总结5.26✅✅
+### 总结5.26✅✅✅
 
-- [JavaScript深入之new的模拟实现](https://github.com/mqyqingfeng/Blog/issues/13)❌
+- [JavaScript深入之new的模拟实现](https://github.com/mqyqingfeng/Blog/issues/13)
+
+- [原生JS实现NEW,带参数](https://www.jianshu.com/p/76aac2f6fabe)
 
     ```javascript
-    // Array.prototype.slice.apply(arguments)和[].shift.call(arguments)的使用方法
-    // https://blog.csdn.net/qq_27626333/article/details/51831282
-    // 原因：arguments是一个类数组对象，包含着传入函数中的所有参数，而且可以使用length属性来确定传递进来多少个参数。直接调用arguments.slice()将返回一个"Object doesn't support this property or method"错误，因为arguments不是一个真正的数组。而以上代码调用Array.prototype.slice.apply(arguments)的意义就在于它能将函数的参数对象转化为一个真正的数组。另一方面也可推知Arguments对象和Array对象的亲缘关系。如果你在编写JavaScript的时候，常常碰到需要将arguments对象转成Array来处理的情形，这个技巧可以帮上忙。Array其他的原型方法也可以应用在arguments上
-    
-    var args = Array.from(arguments).slice(1) 
-    // 等同于
-    var args = Array.prototype.slice.call(arguments, 1)
-    console.log('args', args)
-    
-    // [].shift.call(arguments) 等同于 Array.prototype.shift.call(arguments)
-    
-    // 看 JavaScript深入之类数组对象与arguments  https://github.com/mqyqingfeng/Blog/issues/14
-    
+    function New(func) {
+        // 创建一个空对象，继承构造函数的原型对象
+        var res = Object.create(func.prototype);
+        // 执行构造函数，传递上下文和参数
+        var ret = func.apply(res, Array.prototype.slice.call(arguments, 1));
+        if (typeof ret === 'object' && ret !== null) {
+            return ret
+        } else {
+            return res
+        }
+    }
+    //测试代码：
+    function Person(name, age, job) {
+	    this.name = name;
+	    this.age = age;
+	    this.job = job;
+	    this.sayName = function () {
+	        alert(this.name);
+	    };
+	}
+	var p1 = New(Person, "Ysir", 24, "stu");
+	console.log(p1)
+	var a = New(Array)
+	console.log(a)
+	
+	// Array.prototype.slice.apply(arguments)和[].shift.call(arguments)的使用方法
+	// https://blog.csdn.net/qq_27626333/article/details/51831282
+	// 原因：arguments是一个类数组对象，包含着传入函数中的所有参数，而且可以使用length属性来确定传递进来多少个参数。直接调用arguments.slice()将返回一个"Object doesn't support this property or method"错误，因为arguments不是一个真正的数组。而以上代码调用Array.prototype.slice.apply(arguments)的意义就在于它能将函数的参数对象转化为一个真正的数组。另一方面也可推知Arguments对象和Array对象的亲缘关系。如果你在编写JavaScript的时候，常常碰到需要将arguments对象转成Array来处理的情形，这个技巧可以帮上忙。Array其他的原型方法也可以应用在arguments上
+	
+	var args = Array.from(arguments).slice(1) 
+	// 等同于
+	var args = Array.prototype.slice.call(arguments, 1)
+	console.log('args', args)
+	
+	// [].shift.call(arguments) 等同于 Array.prototype.shift.call(arguments)
+	
+	// 看 JavaScript深入之类数组对象与arguments  https://github.com/mqyqingfeng/Blog/issues/14
+	
 	```
 
 
@@ -498,7 +538,7 @@
 
 
 
-### 总结 5.27✅✅
+### 总结 5.27✅✅✅
 
 1. Babel是一个广泛使用的 ES6 转码器
 
@@ -623,7 +663,7 @@
     // 'aa__cc' replaceAll  ES6方法
     ```
 
- 6. 箭头函数❌
+ 6. 箭头函数
 
     ```javascript
     // 如果箭头函数只有一行语句，且不需要返回值，可以采用下面的写法，就不用写大括号了。
@@ -639,8 +679,46 @@
       }
     }
     // 上面代码中，cat.jumps()方法是一个箭头函数，这是错误的。调用cat.jumps()时，如果是普通函数，该方法内部的this指向cat；如果写成上面那样的箭头函数，使得this指向全局对象，因此不会得到预期结果。这是因为对象不构成单独的作用域，导致jumps箭头函数定义时的作用域就是全局作用域。
+    ```
+
     
-    ❌
+
+    
+
+    ### [ES6语法之函数式编程实现 pipeline](https://blog.csdn.net/sunq1982/article/details/68939811)
+
+    
+
+    [**实现管道机制的核心 -  reduce解析**](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce)
+
+    ```js
+    [0, 1, 2, 3, 4].reduce(function(accumulator, currentValue, currentIndex, array){
+      return accumulator + currentValue;
+    });
+    ```
+
+    callback 被调用四次，每次调用的参数和返回值如下表：
+
+    | **callback** | **accumulator** | **currentValue** | **currentIndex** | **array**       | return value |
+    | ------------ | --------------- | ---------------- | ---------------- | --------------- | ------------ |
+    | first        | 0               | 1                | 1                | [0, 1, 2, 3, 4] | 1            |
+    | second       | 1               | 2                | 2                | [0, 1, 2, 3, 4] | 3            |
+    | third        | 3               | 3                | 3                | [0, 1, 2, 3, 4] | 6            |
+    | fourth       | 6               | 4                | 4                | [0, 1, 2, 3, 4] | 10           |
+
+    第二次的**accumulator**为第一次 accumulator + currentValue
+
+    ```js
+    // 这里改成函数执行 把有返回值的函数当成一个变量在函数中传参调用
+    funcs.reduce(function(pre,cur){
+     return cur(pre);
+    }, val);
+    ```
+
+    
+
+    ```javascript
+    
     // 下面是一个部署管道机制（pipeline）的例子，即前一个函数的输出是后一个函数的输入。
     const pipeline = (...funcs) => val => funcs.reduce((a, b) => b(a), val);
     
@@ -650,10 +728,7 @@
     
     
     addThenMult(5)// 12
-    // addThenMult(5) 相当于下面?
-    addThenMult1 = (5) => ([plus1, mult2]) => 
-     5 => [plus1, mult2].reduce((plus1, mult2) => mult2(plus1), 5);
-    
+    // 总结：pipeline具体实现看上面的链接 （ES6语法之函数式编程实现 pipeline）
     
     // val到底传给了谁？  因为箭头函数可以传递参数
     function foo() {
