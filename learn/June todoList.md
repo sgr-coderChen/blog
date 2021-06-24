@@ -1265,6 +1265,10 @@ iterator.return()// return()方法的使用场合是，如果for...of循环提�
 
 ```
 
+### 总结 ：Iterator首先创建一个指针对象 然后调用指针的next方法去遍历返回数据成员
+
+
+
 
 
 ### `for...of`循环
@@ -1309,6 +1313,234 @@ for (let a of arr.keys()) {// 索引
   console.log(a); // 0 1 2 3 
 }
 ```
+
+
+
+### For...of与其他遍历语法比较
+
+```javascript
+for (var index = 0; index < myArray.length; index++) {
+  console.log(myArray[index]);
+}
+```
+
+这种写法比较麻烦，因此数组提供内置的`forEach`方法。
+
+```javascript
+myArray.forEach(function (value) {
+  console.log(value);
+});
+```
+
+这种写法的问题在于，无法中途跳出`forEach`循环，`break`命令或`return`命令都不能奏效。
+
+```javascript
+for (var index in myArray) {
+  console.log(myArray[index]);
+}
+```
+
+`for...in`循环有几个缺点。
+
+- 数组的键名是数字，但是`for...in`循环是以字符串作为键名“0”、“1”、“2”等等。
+- `for...in`循环不仅遍历数字键名，还会遍历手动添加的其他键，甚至包括原型链上的键。
+- 某些情况下，`for...in`循环会以任意顺序遍历键名。
+
+
+
+`for...of`循环相比上面几种做法，有一些显著的优点。
+
+```javascript
+// 使用 break 语句，跳出for...of循环的例子
+for (var n of fibonacci) {
+  if (n > 1000)
+    break;
+  console.log(n);
+}
+```
+
+- 有着同`for...in`一样的简洁语法，但是没有`for...in`那些缺点。
+- 不同于`forEach`方法，它可以与`break`、`continue`和`return`配合使用。
+- 提供了遍历所有数据结构的统一操作接口。
+
+
+
+# Generator 函数
+
+
+
+```javascript
+function* helloWorldGenerator() {
+  yield 'hello';
+  yield 'world';
+  return 'ending';
+}
+
+var hw = helloWorldGenerator();
+```
+
+```javascript
+hw.next()
+// { value: 'hello', done: false }
+
+hw.next()
+// { value: 'world', done: false }
+
+hw.next()
+// { value: 'ending', done: true }
+
+hw.next()
+// { value: undefined, done: true }
+```
+
+- `function`关键字与函数名之间有一个星号
+- 函数体内部使用`yield`表达式，定义不同的内部状态
+- 调用 Generator 函数后，该函数并不执行，返回的也不是函数运行结果，而是一个指向内部状态的指针对象，也就是遍历器对象（Iterator Object）。
+- 必须调用遍历器对象的`next`方法，使得指针移向下一个状态
+
+
+
+Generator 函数可以不用`yield`表达式，这时就变成了一个单纯的暂缓执行函数。
+
+```javascript
+function* f() {
+  console.log('执行了！')
+}
+
+var generator = f();
+
+setTimeout(function () {
+  generator.next()
+}, 2000);
+```
+
+
+
+```javascript
+var arr = [1, [[2, 3], 4], [5, 6]];
+
+var flat = function* (a) {
+  var length = a.length;
+  for (var i = 0; i < length; i++) {// 这里不能用foreach等循环函数因为里面使用了yield
+    var item = a[i];
+    if (typeof item !== 'number') {// 如果是数组则拉平
+      yield* flat(item);
+    } else {
+      yield item;
+    }
+  }
+};
+
+for (var f of flat(arr)) {// 因为Generator函数需要调用next()方法，而for...of循环时刚好会自动去调用next()方法
+  console.log(f);
+}
+// 1, 2, 3, 4, 5, 6  
+```
+
+
+
+### 与iterator的关系
+
+上一章说过，任意一个对象的`Symbol.iterator`方法，等于该对象的遍历器生成函数，调用该函数会返回该对象的一个遍历器对象。
+
+由于 Generator 函数就是遍历器生成函数，因此可以把 Generator 赋值给对象的`Symbol.iterator`属性，从而使得该对象具有 Iterator 接口。
+
+```javascript
+var myIterable = {};
+myIterable[Symbol.iterator] = function* () {
+  yield 1;
+  yield 2;
+  yield 3;
+};
+
+[...myIterable] // [1, 2, 3]
+```
+
+上面代码中，Generator 函数赋值给`Symbol.iterator`属性，从而使得`myIterable`对象具有了 Iterator 接口，可以被`...`运算符遍历了。
+
+### next方法的参数
+
+`yield`表达式本身没有返回值，或者说总是返回`undefined`。`next`方法可以带一个参数，该参数就会被当作上一个`yield`表达式的返回值。
+
+```javascript
+function* f() {
+  for(var i = 0; true; i++) {
+    var reset = yield i;
+    if(reset) { i = -1; }
+  }
+}
+
+var g = f();
+
+g.next() // { value: 0, done: false }
+g.next() // { value: 1, done: false }
+g.next(true) // { value: 0, done: false }
+```
+
+```javascript
+function* dataConsumer() {
+  console.log('Started');
+  console.log(1,yield);
+  console.log(2,yield);
+  return 'result';
+}
+
+let genObj = dataConsumer();
+genObj.next();// yield是暂停标志 第一次next碰到第二行的yield就停止了，yield后面的表达式下次next才执行，所以只输出Started
+// Started
+genObj.next('a')
+// 1. a
+genObj.next('b')
+// 2. b
+```
+
+
+
+```javascript
+function* foo() {
+  yield 1;
+  yield 2;
+  yield 3;
+  yield 4;
+  yield 5;
+  return 6;
+}
+
+for (let v of foo()) {// foo()调用生成遍历器 然后for...of自动调用next
+  console.log(v);
+}
+// 1 2 3 4 5
+```
+
+`for...of`循环可以自动遍历 Generator 函数运行时生成的`Iterator`对象，且此时不再需要调用`next`方法。
+
+上面代码使用`for...of`循环，依次显示 5 个`yield`表达式的值。这里需要注意，一旦`next`方法的返回对象的`done`属性为`true`，`for...of`循环就会中止，且不包含该返回对象，所以上面代码的`return`语句返回的`6`，不包括在`for...of`循环之中。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
