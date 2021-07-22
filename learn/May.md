@@ -249,7 +249,32 @@
         4、作为call与apply调用 obj.b.apply(object, []); // this指向当前的object
     ```
 
+### 闭包总结
 
+```js
+var scope = "global scope";
+function checkscope(){
+    var scope = "local scope";
+    function f(){
+        return scope;
+    }
+    return f;
+}
+checkscope()(); // "local scope"
+
+var scope = "global scope";
+function checkscope(){
+    var scope = "local scope";
+    
+    return f;
+}
+function f(){
+    return scope;
+}
+checkscope()(); // "global scope"
+```
+
+- 核心就是: **函数的作用域在函数定义的时候就决定了** ，真正理解这句话的时候闭包什么的也就理解了。
 
 
 
@@ -498,11 +523,12 @@
         if (typeof ret === 'object' && ret !== null) {
             return ret
         } else {
+      // Array等类型返回自身 Array.apply(Object.create(Array.prototype)) => []
             return res
         }
     }
     //测试代码：
-    function Person(name, age, job) {
+	function Person(name, age, job) {
 	    this.name = name;
 	    this.age = age;
 	    this.job = job;
@@ -550,6 +576,8 @@
 ```
 
 2. polyfill :Babel 默认只转换新的 JavaScript 句法（syntax），而不转换新的 API，比如Iterator、Generator、Set、Map、Proxy、Reflect、Symbol、Promise等全局对象，以及一些定义在全局对象上的方法（比如Object.assign）都不会转码。
+
+    举例来说，ES6 在`Array`对象上新增了`Array.from`方法。Babel 就不会转码这个方法。如果想让这个方法运行，可以使用**core-js**和`regenerator-runtime`(后者提供generator函数的转码)，为当前环境提供一个垫片。
 
 3. const 对于对象属性可修改 ，const let 不会去修改顶层对象的属性
 
@@ -713,6 +741,14 @@
     funcs.reduce(function(pre,cur){
      return cur(pre);
     }, val);
+    
+    var pipeline = (val, ...funcs) => funcs.reduce((pre, cur) => cur(pre), val); 
+    
+    var double = n => n * 2;
+    var pow = n => n * n;
+    var pow3 = n => n * n * n;
+    
+    var result = pipeline(2, double, pow, pow3); // 4096
     ```
 
     

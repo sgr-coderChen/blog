@@ -1114,7 +1114,7 @@ var y = new Rectangle(3, 4);  // 正确
 
 
 
-# Class的继承
+# [Class的继承](https://es6.ruanyifeng.com/#docs/class-extends)
 
 
 
@@ -1221,10 +1221,163 @@ class B extends A {
     super();// 代表调用父类的构造函数 实例化前必须先 生成父类this
   }
 }
+
+// super()内部的this指向的是子类的
+class A {
+  constructor() {
+    console.log(new.target.name);
+  }
+}
+class B extends A {
+  constructor() {
+    super();
+  }
+}
+new A() // A
+new B() // B
+
+// 作为函数时，super()只能用在子类的构造函数之中，用在其他地方就会报错。
+class A {}
+
+class B extends A {
+  m() {
+    super(); // 报错
+  }
+}
+```
+
+- 第二种情况，`super`作为对象时，在普通方法中，指向父类的原型对象(A.prototype)；在静态方法中，指向父类。
+
+```javascript
+class A {
+  p() {
+    return 2;
+  }
+}
+
+class B extends A {
+  constructor() {
+    super();
+    console.log(super.p()); // 2   super.p()就相当于A.prototype.p()
+  }
+}
+
+let b = new B();
+```
+
+由于`super`指向父类的原型对象，所以定义在父类实例上的方法或属性，是无法通过`super`调用的。
+
+```javascript
+class A {
+  constructor() {
+    this.p = 2;// p是父类A实例的属性，super.p就引用不到它。
+  }
+}
+
+class B extends A {
+  get m() {
+    return super.p;// 相当于A.prototype.p,但是p不是在prototype上而在实例上
+  }
+}
+
+let b = new B();
+b.m // undefined
+
+```
+
+```js
+// 如果属性定义在父类的原型对象上，super就可以取到。
+class A {}
+A.prototype.x = 2;
+
+class B extends A {
+  constructor() {
+    super();
+    console.log(super.x) // 2
+  }
+}
+
+let b = new B();
+```
+
+ES6 规定，在子类普通方法中通过`super`调用父类的方法时，方法内部的`this`指向当前的子类实例。
+
+```javascript
+class A {
+  constructor() {
+    this.x = 1;
+  }
+  print() {
+    console.log(this.x);
+  }
+}
+
+class B extends A {
+  constructor() {
+    super();
+    this.x = 2;
+    // 通过super对某个属性赋值，赋值的属性会变成子类实例的属性
+    // super.x = 3;
+    // console.log(super.x); // undefined  读的是A.prototype.x，所以返回undefined。
+    // console.log(this.x); // 3
+  }
+  m() {
+    super.print(); // 实际上执行的是super.print.call(this)
+  }
+}
+
+let b = new B();
+b.m() // 2
+```
+
+**`super`在静态方法之中指向父类，在普通方法之中指向父类的原型对象**
+
+
+
+### import()的使用
+
+`import()`返回一个 Promise 对象，下面是`import()`的一些适用场合。
+
+- 按需加载
+
+```javascript
+button.addEventListener('click', event => {
+  import('./dialogBox.js')
+  .then(dialogBox => {
+    dialogBox.open();
+  })
+  .catch(error => {
+    /* Error handling */
+  })
+});
+```
+
+上面代码中，`import()`方法放在`click`事件的监听函数之中，只有用户点击了按钮，才会加载这个模块。
+
+- 条件加载
+
+```javascript
+if (condition) {
+  import('moduleA').then(...);
+} else {
+  import('moduleB').then(...);
+}
+```
+
+- 动态的模块路径
+
+```javascript
+import(f()).then(...);
+// 上面代码中，根据函数f的返回结果，加载不同的模块。
 ```
 
 
 
+## ES6 模块与 CommonJS 模块的差异
+
+- CommonJS 模块输出的是一个值的拷贝，ES6 模块输出的是值的引用。
+- CommonJS 模块是运行时加载，ES6 模块是编译时输出接口。
+- CommonJS 模块的`require()`是同步加载模块，ES6 模块的`import`命令是异步加载，有一个独立的模块依赖的解析阶段。
 
 
 
@@ -1238,11 +1391,3 @@ class B extends A {
 
 
 
-
-
-
-
-
-
-
-todo：链式调用原理
