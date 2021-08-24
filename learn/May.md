@@ -4,7 +4,7 @@
 
 ✅已复盘，并理解   ❌没有理解
 
-### 总结 5.10  已复盘✅✅✅✅
+### 总结 5.10  已复盘✅✅✅✅✅
 
 - post-css Autoprefixer 自动补全css浏览器前缀 
     https://blog.csdn.net/weixin_44388523/article/details/106957559
@@ -23,7 +23,7 @@
 
     
 
-### 总结 5.14 已复盘✅✅✅✅✅
+### 总结 5.14 已复盘✅✅✅✅✅✅
 
 - 最佳全局挂载方式（Object.defineProperty）
 
@@ -51,7 +51,7 @@
 
     ​	https://www.cnblogs.com/yesu/p/9546458.html
     ​	https://www.cnblogs.com/lijjj/p/12978469.html
-    ​	a:  Vue 不能检测到对象属性的添加或删除。由于 Vue 会在初始化实例时对属性执行 getter/setter 转化过程，所以属性必须在 data 对象上存在才能让 Vue 转换它，这样才能让它是响应的。
+    ​	a:  Vue 不能检测到对象属性的添加或删除，或者数组索引直接设置一个项。由于 Vue 会在初始化实例时对属性执行 getter/setter 转化过程，所以属性必须在 data 对象上存在才能让 Vue 转换它，这样才能让它是响应的。
 
     ​    b:  默认情况下 handler 只监听obj这个属性它的引用的变化，我们只有给obj赋值的时候它才会监听到，比如我们在 mounted事件钩子函数中对obj进行重新赋值
 
@@ -81,7 +81,7 @@
 
 
 
-### 总结 5.19✅✅✅✅✅
+### 总结 5.19✅✅✅✅✅✅
 
 - [JavaScript深入之从原型到原型链](https://github.com/mqyqingfeng/Blog/issues/2)	
     原型链，构造函数和对象 (主要去理解原型链那一张图，蓝色的就是原型链)
@@ -199,7 +199,7 @@
 
 
 
-### 总结 5.20✅✅✅✅✅
+### 总结 5.20✅✅✅✅✅✅
 
 - JavaScript专题之跟着underscore学防抖
 
@@ -266,9 +266,19 @@ var scope = "global scope";
 function checkscope(){
     var scope = "local scope";
     
+    return function (){// 向上找到local scope
+        return scope;
+    };
+}
+checkscope()(); // "local scope" 和上面的防抖闭包一样的
+
+var scope = "global scope";
+function checkscope(){
+    var scope = "local scope";
+    
     return f;
 }
-function f(){
+function f(){// 声明在和checkscope同级 根据作用域链找到global scope
     return scope;
 }
 checkscope()(); // "global scope"
@@ -279,7 +289,7 @@ checkscope()(); // "global scope"
 
 
 
-### 总结5.24✅✅✅✅
+### 总结5.24✅✅✅✅✅
 
 - this的指向问题结合思考题  http://javascript.ruanyifeng.com/oop/this.html#toc3
 
@@ -316,10 +326,27 @@ checkscope()(); // "global scope"
     };
     
     alert(object.getNameFunc()());// The Window
+    
+    
+    var name = "The Window";
+    
+    　　var object = {
+    　　　　name : "My Object",
+    
+    　　　　getNameFunc : function(){
+    　　　　　　var that = this; // 多层嵌套需要固定this的指向
+    　　　　　　return function(){
+    　　　　　　　　return that.name;
+    　　　　　　};
+    　　　　}
+    
+    　　};
+    
+    　　alert(object.getNameFunc()());// My Object
     ```
 
 
-### 总结5.25✅✅✅✅
+### 总结5.25✅✅✅✅✅
 
 - [JavaScript深入之参数按值传递](https://github.com/mqyqingfeng/Blog/issues/10)
 
@@ -487,6 +514,12 @@ checkscope()(); // "global scope"
        return d.getTime.call(d) //这里要return 因为call是会立即执行的 而bind会自动返回一个绑定好的函数
     };
     print() // 1481869925657
+    
+    // 3.用es6的箭头函数固定this指向
+    var d = new Date();
+    
+    var print = () => d.getTime();
+    print() // 1481869925657
     ```
     
     ```javascript
@@ -500,6 +533,7 @@ checkscope()(); // "global scope"
     
     var func = counter.inc.bind(counter);
     // 或者 var func = () => counter.inc.call(counter)  用call、apply需要 return 返回
+    // 或者用es6   var func = () => counter.inc();
     func();
     counter.count // 1
     ```
@@ -508,9 +542,34 @@ checkscope()(); // "global scope"
 
 
 
-### 总结5.26✅✅✅
+### 总结5.26✅✅✅✅
 
 - [JavaScript深入之new的模拟实现](https://github.com/mqyqingfeng/Blog/issues/13)
+
+    ```js
+    // 第一版代码
+    function objectFactory() {
+    
+        var obj = new Object(),
+            
+    	// shift() 方法用于把数组的第一个元素从其中删除，并返回第一个元素的值。即Constructor为需要创建实例的构造函数（var person = new Person() 中的Person）
+        Constructor = [].shift.call(arguments);
+    
+        obj.__proto__ = Constructor.prototype;
+    
+        Constructor.apply(obj, arguments);
+    
+        return obj;
+    
+    };
+    // 1.用new Object() 的方式新建了一个对象 obj
+    // 2.取出第一个参数，就是我们要传入的构造函数。此外因为 shift 会修改原数组，所以 arguments 会被去除第一个参数
+    // 3.将 obj 的原型指向构造函数，这样 obj 就可以访问到构造函数原型中的属性
+    // 4.使用 apply，改变构造函数 this 的指向到新建的对象，这样 obj 就可以访问到构造函数中的属性
+    // 5.返回 obj
+    ```
+
+    
 
 - [原生JS实现NEW,带参数](https://www.jianshu.com/p/76aac2f6fabe)
 
@@ -564,7 +623,7 @@ checkscope()(); // "global scope"
 
 
 
-### 总结 5.27✅✅✅
+### 总结 5.27✅✅✅✅
 
 1. Babel是一个广泛使用的 ES6 转码器
 
