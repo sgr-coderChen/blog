@@ -26,6 +26,8 @@
 * [扩展运算符（...）与深浅拷贝](https://github.com/sgr-coderChen/blog/issues/14)
 
 ### 学习笔记
-- <a href="learn/May.md">五月JavaScript篇</a>
-- <a href="learn/June.md">六月JavaScript篇</a>
-- <a href="learn/July.md">七月JavaScript篇</a>
+- <a href="learn/May.md">五月篇</a>
+- <a href="learn/June.md">六月篇</a>
+- <a href="learn/July.md">七月篇</a>
+- <a href="learn/August.md">八月篇</a>
+

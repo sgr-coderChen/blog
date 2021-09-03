@@ -97,7 +97,7 @@ container.onmousemove = throttle(getUserAction, 1000);
 
 
 
-### 使用时间戳
+### 使用定时器
 
 当触发事件的时候，我们设置一个定时器，再触发事件的时候，如果定时器存在，就不执行，直到定时器执行，然后执行函数，清空定时器，这样就可以设置下个定时器。
 
@@ -124,7 +124,7 @@ function throttle(func, wait) {
 所以比较两个方法：
 
 1. 第一种事件会立刻执行，第二种事件会在 n 秒后第一次执行
-2. 第一种事件停止触发后没有办法再执行事件（因为最后一次未到达时间戳的if条件阈值，所有不触发），第二种事件停止触发后依然会再执行一次事件（最后一次触发定时器并清除了，又进了一次if条件）
+2. 第一种事件停止触发后没有办法再执行事件（因为最后一次未到达时间戳的if条件阈值，所以不触发），第二种事件停止触发后依然会再执行一次事件（最后一次触发定时器并清除了，又进了一次if条件）
 
 
 
@@ -258,9 +258,287 @@ type(function a(){})
 
 
 
+```js
+function Promise(fn) {
+  this.cbs = [];
+
+  const resolve = (value) => {
+    setTimeout(() => {
+      this.data = value;
+      this.cbs.forEach((cb) => cb(value));
+    });
+  }
+
+  fn(resolve);
+}
+
+Promise.prototype.then = function (onResolved) {
+  return new Promise((resolve) => {
+    this.cbs.push(() => {
+      const res = onResolved(this.data);
+      if (res instanceof Promise) {
+        res.then(resolve);
+      } else {
+        resolve(res);
+      }
+    });
+  });
+};
+
+```
 
 
-## JavaScript专题之函数柯里化
+
+## Vue 插槽的使用
+
+[一般性使用](https://cn.vuejs.org/v2/guide/components-slots.html)
+
+[render函数api式使用](https://cn.vuejs.org/v2/guide/render-function.html#%E6%8F%92%E6%A7%BD)
 
 
+
+### 使用场景 (简单实现类似vue-promised库的 数据和 ui 分离的封装，通过slot实现)
+
+promise组件代码
+
+```vue
+<!-- 写法1：模板写法
+<template>
+    <div>
+        <slot v-if="status === 0 && promise" name="pendding"></slot>
+        <slot v-if="status === 1" name="resolve" :resolve="result"></slot>
+        <slot v-if="status === -1" name="reject" :reject="result"></slot>
+    </div>
+</template>
+ -->
+
+<script>
+export default {
+    props: {
+        promise: {
+            required: true,
+            default: null
+        }
+    },
+    data() {
+        return {
+            result: null,
+            status: 0
+        };
+    },
+    watch: {
+        promise() {
+            console.log('promise', this.promise)
+            this.reset()
+            this.promiseAction()
+        }
+    },
+    render() {
+        // 写法2：渲染函数写法 $slots,$scopedSlots 返回vnode 相当于  <slot name="reject" :reject="result"></slot>
+        if (this.status === 0 && this.promise) return this.$slots.pendding
+        if (this.status === 1) return this.$scopedSlots.resolve({resolve: this.result})
+        if (this.status === -1) return this.$scopedSlots.reject({reject: this.result})
+    },
+    methods: {
+        reset() {
+            this.status = 0;
+            this.result = null;
+        },
+        promiseAction() {
+            this.promise
+            .then(res => {
+                this.resolve(res)
+            })
+            .catch(err => {
+                this.reject(err)
+            })
+        },
+        resolve(res){
+            this.status = 1;
+            this.result = res;
+        },
+        reject(err){
+            this.status = -1;
+            this.result = err;
+        },
+    }
+};
+</script>
+
+```
+
+promise组件使用 使用插槽作用域解构 （[看官方文档](https://cn.vuejs.org/v2/guide/components-slots.html#%E8%A7%A3%E6%9E%84%E6%8F%92%E6%A7%BD-Prop)）
+
+```vue
+<PromiseDemo :promise="promise">
+    <template #pendding>
+        <!-- {{ JSON.stringify(resolve) }} -->
+        请求中...
+    </template>
+    <template #resolve="{ resolve }">
+        <!-- {{ JSON.stringify(resolve) }} -->
+        {{ resolve.msg }}
+    </template>
+    <template #reject="{ reject }">
+        <!-- {{ JSON.stringify(reject) }} -->
+        {{ reject.err }}
+    </template>
+</PromiseDemo>
+
+<button @click="test()">发起请求</button>
+
+<script>
+export default {
+    data() {
+        return {
+            promise: null
+        }
+    }
+    methods: {
+        test() {
+            this.promise = new Promise((resolve,reject)=>{
+                setTimeout(()=>{
+                    if(Math.random()>0.5){
+                        resolve({msg:"123成功"})
+                    }else{
+                        reject({err:"456失败"})
+                    }
+                    // reject({err:"456失败"})
+                },2000)
+            });
+        },
+    }
+};
+</script>
+
+```
+
+
+
+## Vue 组件Api式调用
+
+[官方extend方法](https://cn.vuejs.org/v2/api/#Vue-extend)
+
+[示例参考链接](https://github.com/sl1673495/vue-netease-music/blob/master/src/base/confirm.vue)
+
+自己实现一个简易的Picker组件
+
+```vue
+<template>
+    <van-popup
+        v-model="visible"
+        position="bottom"
+        round
+    >
+        <van-picker
+            :title="title"
+            show-toolbar
+            :columns="columns"
+            @confirm="_onConfirm"
+        />
+    </van-popup>
+</template>
+
+<script>
+import Vue from 'vue'
+
+const Picker = {
+    name: 'Picker',
+    props: {
+        visible: { type: Boolean, default: false },
+        title: { type: String, default: '标题' },
+        columns: { type: Array, default: () => [] },
+        onConfirm: { type: Function, default: () => {} },
+    },
+    data() {
+        return {
+            // visible: this.visible
+        };
+    },
+    mounted() {
+
+    },
+    methods: {
+        _onConfirm(value) {
+            this.onConfirm && this.onConfirm(value)
+            this.visible = false
+        },
+    }
+};
+export default Picker
+
+// 单例减少开销
+let instanceCache
+
+export const createPicker = (columns, title, onConfirm, single = true) => {// single是否单例模式
+    if (typeof title === 'function') {
+        //  如果第二个参数不传title(传了onConfirm) 替换位置  
+        if (onConfirm !== undefined) single = onConfirm
+        onConfirm = title
+        title = undefined
+    }
+    //  继承vue 生成子类构造函数 PickerCtor
+    const PickerCtor = Vue.extend(Picker)
+    //  创建实例方法
+    const initComponent = () => {
+        instanceCache = new PickerCtor({
+            propsData: {
+                columns,
+                title,
+                onConfirm
+            }
+        })
+        //  生成dom
+        instanceCache.$mount()
+        document.body.appendChild(instanceCache.$el)
+        return instanceCache
+    }
+    //  更新实例方法
+    const updateComponent = () => {
+        // 读取缓存组件 更新属性
+        instanceCache.columns = columns
+        instanceCache.title = title
+        instanceCache.onConfirm = onConfirm
+        return instanceCache
+    }
+    //  创建实例 
+    const getInstance = () => 
+        if (single) {// 如果是单例
+            if (!instanceCache) {// 第一次创建
+                return initComponent()
+            } else {
+                return updateComponent()
+            }
+        } else {//	非单例 创建多个picker组件
+            return initComponent()
+        }
+    }
+    
+    const instance = getInstance()
+    // 确保更新的prop渲染到dom
+    // 确保动画效果
+    Vue.nextTick(() => {
+        instance.visible = true
+    })
+}
+</script>
+
+<style scoped lang="scss">
+
+</style>
+
+```
+
+使用picker插件
+
+```js
+import { createPicker} from '@/components/Common/Picker'
+createPicker(
+    ['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华', '衢州'],
+    (value) => {
+        console.log(1111, value)
+    },
+    //false 是否开启单例模式
+)
+```
 
