@@ -421,6 +421,45 @@ export default {
 
 [示例参考链接](https://github.com/sl1673495/vue-netease-music/blob/master/src/base/confirm.vue)
 
+```js
+//	核心代码
+export const confirm = function (text, title, onConfirm = () => {}) {
+  if (typeof title === "function") {
+    onConfirm = title;
+    title = undefined;
+  }
+  const ConfirmCtor = Vue.extend(Confirm);
+  const getInstance = () => {
+    if (!instanceCache) {
+      instanceCache = new ConfirmCtor({
+        propsData: {
+          text,
+          title,
+          onConfirm,
+        },
+      });
+      // 生成dom
+      instanceCache.$mount();
+      document.body.appendChild(instanceCache.$el);
+    } else {
+      // 更新属性
+      instanceCache.text = text;
+      instanceCache.title = title;
+      instanceCache.onConfirm = onConfirm;
+    }
+    return instanceCache;
+  };
+  const instance = getInstance();
+  // 确保更新的prop渲染到dom
+  // 确保动画效果
+  Vue.nextTick(() => {
+    instance.visible = true;
+  });
+};
+```
+
+
+
 自己实现一个简易的Picker组件
 
 ```vue
@@ -532,7 +571,7 @@ export const createPicker = (columns, title, onConfirm, single = true) => {// si
 使用picker插件
 
 ```js
-import { createPicker} from '@/components/Common/Picker'
+import { createPicker } from '@/components/Common/Picker'
 createPicker(
     ['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华', '衢州'],
     (value) => {
