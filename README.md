@@ -1,4 +1,13 @@
 ## 文章列表
+
+### 学习笔记
+- <a href="learn/May.md">五月篇</a>
+- <a href="learn/June.md">六月篇</a>
+- <a href="learn/July.md">七月篇</a>
+- <a href="learn/August.md">八月篇</a>
+- <a href="learn/Sept.md">九月篇</a>
+- <a href="learn/Oct.md">十月篇</a>
+
 ### Vue
 * [vue 配置webpack的路径别名 @符号的使用](https://github.com/sgr-coderChen/blog/issues/1)
 * [vue自定义组件v-model的实现和原理剖析](https://github.com/sgr-coderChen/blog/issues/11)
@@ -25,9 +34,4 @@
 * [ES6模块化导出](https://github.com/sgr-coderChen/blog/issues/7)
 * [扩展运算符（...）与深浅拷贝](https://github.com/sgr-coderChen/blog/issues/14)
 
-### 学习笔记
-- <a href="learn/May.md">五月篇</a>
-- <a href="learn/June.md">六月篇</a>
-- <a href="learn/July.md">七月篇</a>
-- <a href="learn/August.md">八月篇</a>
 

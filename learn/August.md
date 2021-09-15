@@ -499,7 +499,7 @@ const Picker = {
     },
     methods: {
         _onConfirm(value) {
-            this.onConfirm && this.onConfirm(value)
+            this.onConfirm && this.onConfirm(value) // props回调触发方法和emit触发的区别  (官官方还是推荐emit来触发)https://www.zhihu.com/question/436954378/answer/1650852612
             this.visible = false
         },
     }

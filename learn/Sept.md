@@ -286,8 +286,8 @@ export default {
 
 ```js
 //	输出
-console.log('$attrs', this.$attrs)  // $attrs {title: '标题', a: 123}
-console.log('$listeners', this.$listeners) // $listeners {aaa: ƒ}
+console.log('$attrs', this.$attrs)  // $attrs {title: '标题', a: 123} 在$attrs里面只会有子组件props没有注册的属性
+console.log('$listeners', this.$listeners) // $listeners {aaa: ƒ} 会输出所有的订阅事件
 ```
 
 ### inheritAttrs的使用
@@ -304,4 +304,14 @@ console.log('$listeners', this.$listeners) // $listeners {aaa: ƒ}
 - 在$attrs里面只会有子组件props没有注册的属性，已经在子组件中注册的prop不会再$attrs中出现
 - inheritAttrs写在子组件中， 如果不设置为false 会将传入的属性插入到子组件上层的 div标签属性中
 - 最底层的子组件一定要使用props接收从父组件传递过来的数据
+
+
+
+
+
+
+
+
+
+
 
