@@ -423,6 +423,8 @@ export default {
 
 ```js
 //	核心代码
+let instanceCache // 单例减少开销
+
 export const confirm = function (text, title, onConfirm = () => {}) {
   if (typeof title === "function") {
     onConfirm = title;

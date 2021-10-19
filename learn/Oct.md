@@ -317,7 +317,7 @@ square.penWidth = 5.0;
 
 
 
-### 混合类型❌
+### 混合类型
 
 一个对象可以同时具有上面提到的多种类型，一个对象可以同时做为函数和对象使用，并带有额外的属性
 
@@ -332,7 +332,7 @@ function getCounter(): Counter {
     let counter = <Counter>function (start: number) { };
     counter.interval = 123;
     counter.reset = function () { };
-    return counter;
+    return counter; // 返回的counter对象 满足Counter接口
 }
 
 let c = getCounter();

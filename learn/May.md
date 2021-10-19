@@ -837,6 +837,58 @@ checkscope()(); // "global scope"
     
     
     ```
+    
+    ### 使用reduce对象数组去重
+    
+    ```js
+    // 通过对象key的唯一性来实现 对象数组去重
+    test(array) {
+        let obj = {}
+        let result = []
+        result = array.reduce(function(item, next) {
+            // obj[next.id] ? '' : obj[next.id] = true && item.push(next);  // 写法一
+            // return item;
+            
+            if (!obj[next.id]) { // 写法二
+                obj[next.id] = true  // 如果不存在 就把下一个的标识符放入obj中 并设置true 如果下次还出现 则不push（做到了去重作用）
+                item.push(next)
+            }
+            return item;
+        }, []);// 初始值设为空数组
+        return result
+    },
+    
+    var arr = [
+      { id: 1, name: 'a' },
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b' },
+      { id: 3, name: 'c' },
+      { id: 3, name: 'g' },
+    ]
+    console.log('1111', this.test(arr))
+    
+    
+    
+    // 小优化  抽离标识符（key）obj.name === obj[name]
+    test2(array, name) {
+        let obj = {}
+        let result = []
+        result = array.reduce(function(item, next) {
+            if (!obj[next[name]]) {
+                obj[next[name]] = true 
+                item.push(next)
+            }
+            return item;
+        }, []);// 初始值设为空数组
+        return result
+    },
+    console.log('222', this.test(arr, 'name'))
+        
+    ```
+    
+    
+
+
 
 7. rest参数和扩展运算符的区别
 

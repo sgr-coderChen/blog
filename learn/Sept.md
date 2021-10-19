@@ -171,7 +171,7 @@ export default {
                 return (
                     <div>测试scopedSlots插槽</div>
                     
-                    // 使用自定义组件来插入
+                    // 使用自定义组件来插入  （下面有组件说明）
                     // <HighlightText 
                     //     props={{
                     //         text: scope.row.address,
@@ -198,7 +198,7 @@ render() {
                 {this.showColumns.map((item, index) => {
                     //	这里的columnProps使用了解构 内容为 除了scopedSlots属性 其他属性的集合对象
                     //  const { a, ...y } = { a: 1, b: 2, c: 3 } 输出: a = 1, y ={b: 2, c: 3}
-                    const { scopedSlots, ...columnProps } = item
+                    const { scopedSlots, ...columnProps } = item // 分离普通props和插槽scopedSlots
                     return (
                         <el-table-column 
                             key={index}
@@ -213,6 +213,48 @@ render() {
         )
         
     }
+```
+
+### 附一个高亮组件(highlightText)
+
+- 传入text，highlightText
+- 通过indexOf找到高亮文字的第一个字符（拿到索引）
+- 截取高亮前的str 和 高亮后的str
+- 高亮部分返回一个high-light-text的span
+
+```vue
+<script>
+export default {
+    props: ["text", "highlightText"],
+    methods: {
+        genHighlight() {
+            if (!this.text) return <span>{ this.text }</span>
+            const matchIndex = this.text.indexOf(this.highlightText)
+            const beforeStr = this.text.substr(0, matchIndex)
+            const afterStr = this.text.substr(matchIndex + this.highlightText.length)
+            const hitStr = this.text.substr(matchIndex, this.highlightText.length)
+            const titleSpan = matchIndex > -1 ? (
+                <span>
+                    { beforeStr }
+                    <span class="high-light-text">{ hitStr }</span>
+                    { afterStr }
+                </span>
+            ) : <span>{ this.text }</span>
+            return titleSpan 
+        }
+    },
+    render() {
+        return this.genHighlight()
+    }
+};
+</script>
+
+<style scoped lang="less">
+.high-light-text {
+  color: red;
+}
+</style>
+
 ```
 
 
