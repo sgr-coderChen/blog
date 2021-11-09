@@ -4,7 +4,7 @@
 
 ### 受控组件
 
-```react
+```jsx
 import React, { Component } from 'react'
 
 export default class CommonInput extends Component {
@@ -40,7 +40,7 @@ export default class CommonInput extends Component {
 
 ### 事件绑定
 
-```react
+```jsx
 constructor(props) {
     super(props)
     // 事件绑定 方式4
@@ -84,7 +84,7 @@ render() {
 - 调用的本质为更新state ,重新render 渲染UI
 - 三种写法
 
-```react
+```jsx
 test = (title, e) => {
     // this.setState({ text: this.state.text + 1 })
     // console.log('text', this.state.text) // 0
@@ -115,7 +115,7 @@ test = (title, e) => {
 
 **案例：在屏幕实时获取鼠标的坐标位置** 
 
-```react
+```jsx
 import React, { Component } from 'react'
 
 // 子组件
@@ -197,7 +197,7 @@ export default class RenderProps extends Component {
 - 高阶组件的作用是用于代码复用*，可以把组件之间可复用的代码、逻辑抽离到高阶组件当中。*新的组件和传入的组件通过 `props` 传递信息。
 - 参考Vue2是通过mixin混入模式来实现的
 
-```react
+```jsx
 //  高阶组件 HOC写法  with_ 为命名规范
 export function withMouse(WrappedComponent) {
     class Mouse extends Component {
@@ -242,7 +242,7 @@ export const MousePosition = withMouse(Position) // 测试高阶组件
 
 ### react-router-dom路由
 
-```react
+```jsx
 // 组件式
 <Link
   to={{
@@ -321,7 +321,7 @@ module.exports = router
 
 第一种 通过package.json 配置proxy
 
-```json
+```js
 // package.json 
 // 
 {
@@ -340,7 +340,7 @@ fetch('/api/list')
 
 第二种 通过http-proxy-middleware
 
-```react
+```jsx
 // 新建src/setupProxy.js 
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
