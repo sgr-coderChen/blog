@@ -7,6 +7,7 @@
 - <a href="learn/August.md">八月篇</a>
 - <a href="learn/Sept.md">九月篇</a>
 - <a href="learn/Oct.md">十月篇</a>
+- <a href="learn/React笔记.md">react笔记</a>
 
 ### Vue
 * [vue 配置webpack的路径别名 @符号的使用](https://github.com/sgr-coderChen/blog/issues/1)
