@@ -86,12 +86,12 @@ render() {
 
 ```jsx
 test = (title, e) => {
-    // this.setState({ text: this.state.text + 1 })
+    // this.setState({ text: this.state.text + 1 }) //（第1种）
     // console.log('text', this.state.text) // 0
-    // this.setState({ text: this.state.text + 1 }) // 0 + 1 第二次还是1 因为this.state.text一直为0
+    // this.setState({ text: this.state.text + 1 }) // 0 + 1 第二次输出还是0 因为this.state.text一直为0
     // console.log('text', this.state.text) // 0
 
-    // 推荐语法 这种执行 text 会变成 2 因为这种写法里面的state为上次调用的结果
+    // 推荐语法 （第2种） 这种执行 text 会变成 2 因为这种写法里面的state为上次调用的结果
     this.setState((state) => { 
         return {
             text: state.text + 1 
@@ -103,7 +103,10 @@ test = (title, e) => {
             text: state.text + 1 
         }
     })
-
+	// 回调函数获取最新数据（第3种，个人推荐这个）
+    this.setState({ text: this.state.text + 1 }, () => {
+        console.log('回调函数里也是最新的', this.state.text) // 1
+    })
 }
 ```
 
@@ -111,7 +114,7 @@ test = (title, e) => {
 
 ## Render-Props模式
 
-> 原理: 其实就是父组件来提供render方法  子组件通过render方法回调执行传递state（回调函数子传父）（但是子组件必须要有返回的内容）
+> 原理:  （为了复用逻辑，与高阶组件初衷一致） 其实就是父组件来提供render方法  子组件通过render方法回调执行传递state（回调函数子传父）（但是子组件必须要有返回的内容） === > 这里与vue的slot 作用域插槽相类似
 
 **案例：在屏幕实时获取鼠标的坐标位置** 
 
@@ -172,7 +175,7 @@ export default class RenderProps extends Component {
                     } 
                 />
                 <Mouse>
-                    { // 使用chilren实现  更加优雅
+                    { // 使用chilren实现  更加优雅  与vue的slot 作用域插槽相类似
                         ({x, y}) => {
                             // 这里就可以使用其他组件 渲染不同的UI
                             return (
@@ -192,9 +195,9 @@ export default class RenderProps extends Component {
 
 ## [高阶组件（HOC）](https://hyf.js.org/react-naive-book/lesson28)
 
-- 高阶组件就是一个函数，传给它一个组件，它返回一个新的组件*。新的组件使用传入的组件作为子组件。
+- 高阶组件就是一个函数，传给它一个组件，它返回一个新的组件。新的组件使用传入的组件作为子组件。
 
-- 高阶组件的作用是用于代码复用*，可以把组件之间可复用的代码、逻辑抽离到高阶组件当中。*新的组件和传入的组件通过 `props` 传递信息。
+- 高阶组件的作用是用于代码复用，可以把组件之间可复用的代码、逻辑抽离到高阶组件当中。新的组件和传入的组件通过 `props` 传递信息。
 - 参考Vue2是通过mixin混入模式来实现的
 
 ```jsx
@@ -391,11 +394,11 @@ fetch('/api/list')
 
 ### 基本使用与搭建
 
-**1.安装redux 与 react-redux   (yarn add redux react-redux) **
+**1.安装redux 与 react-redux   (yarn add redux react-redux)**
 
 ```jsx
 //	src/index.js
-import { createStore } from 'redux' // applyMiddleware中间件
+import { createStore } from 'redux'
 import { Provider } from 'react-redux' // Provider包裹根组件 向下传递store 这样所有组件都能拿到store
 import counter from './reducers' // 引入counter reducers
 
@@ -536,6 +539,51 @@ const mapStateToProps = (state) => ({
   // 如果合并了多个reducer需要变成state.counter
   counter: state.counter
 })
+```
+
+
+
+### redux的ducks模式
+
+[参考链接](https://www.jianshu.com/p/4f98f1c5e6a9)
+
+[redux架构可以参考这个](https://github.com/iHaroro/react-entry-template)
+
+> 有些人喜欢把 action 单独切出去一个目录 `actions`，让 action 和 reducer 分开。个人观点觉得这种做法可能有点过度优化了，其实多数情况下特定的 action 只会影响特定的 reducer，直接放到一起可以更加清晰地知道这个 action 其实只是会影响到什么样的 reducer。而分开会给我们维护和理解代码带来额外不必要的负担
+
+```js
+// 例子
+
+// Actions
+const LOAD   = 'my-app/widgets/LOAD';
+const CREATE = 'my-app/widgets/CREATE';
+const UPDATE = 'my-app/widgets/UPDATE';
+const REMOVE = 'my-app/widgets/REMOVE';
+
+// Reducer
+export default function reducer(state = {}, action = {}) {
+  switch (action.type) {
+    // do reducer stuff
+    default: return state;
+  }
+}
+
+// Action Creators
+export function loadWidgets() {
+  return { type: LOAD };
+}
+
+export function createWidget(widget) {
+  return { type: CREATE, widget };
+}
+
+export function updateWidget(widget) {
+  return { type: UPDATE, widget };
+}
+
+export function removeWidget(widget) {
+  return { type: REMOVE, widget };
+}
 ```
 
 
