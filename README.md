@@ -1,6 +1,7 @@
 ## 文章列表
 
 ### 学习笔记
+- <a href="learn/vue3初探.md">vue3初探（类比react新特性）</a>
 - <a href="learn/May.md">五月篇</a>
 - <a href="learn/June.md">六月篇</a>
 - <a href="learn/July.md">七月篇</a>
