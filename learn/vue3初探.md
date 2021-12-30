@@ -152,10 +152,51 @@ console.log('x2', x) // 0
 
 ### ref与reactive使用场景推荐
 
+[转载-ref与reactive](https://juejin.cn/post/7029559671648518151)
+
 - 如果是基本类型推荐使用ref 写起来比较简洁
 - 如果是引用类型（对象，数组等）必须使用reactive，来保证其响应式
+- 如果**ref**使用的是**引用类型**，底层ref会借助reactive的proxy 定义响应式
+- **reactive** 无法定义基本类型的proxy,且设置值无法响应数据
 
+### 除了对象都用ref来定义
 
+```js
+let switchKG = ref(false)
+console.log(switchKG.value)
+
+let arr = ref([])
+arr.value = [1, 2, 3, 4, 5]
+console.log(arr.value)
+
+let Obj = reactive({
+  arr: []
+})
+reactive.arr = [1, 2, 3, 4, 5]
+```
+
+### 都用reactive来定义，然后用toRefs进行导出到页面使用
+
+```vue
+<template>
+  <div>{{arr}}</div>
+  <div>{{obj}}</div>
+  <div>{{swithKW}}</div>
+</template>
+<script setup>
+import {reactive, toRefs} from "vue";
+
+let state = reactive({
+  swithKW:false,
+  arr: [],
+  obj: {}
+})
+console.log(state.arr)
+console.log(state.obj)
+//导出到页面使用
+const {swithKW, arr, obj } = toRefs(state)
+</script>
+```
 
 
 
@@ -408,7 +449,7 @@ export default function Example() {
 
 - 一般的副作用就是说这个函数做了不属于它应该做的事，比如console.log，或者它修改了其他的外部变量之类的。
 
-- react中的函数组件要求必须是纯函数也就是没有副作用的函数，就是因为这个函数会被很多次调用，如果有副作用比如修改了全局变量（如：修改了document.title），那么将无法控制该变量的准确性
+- react中的函数组件要求必须是纯函数也就是没有副作用的函数，就是因为这个函数会被很多次调用，如果有副作用比如修改了**全局变量**（如：修改了document.title），那么将无法控制该变量的准确性
 
 - vue里面一般就是说，一些当状态改变时需要执行的行为，比如在每次msg变量改变时我需要重新打印它，那么这个打印行为就可以说是一个副作用(effect)
 

@@ -11,6 +11,7 @@
 - <a href="learn/React笔记.md">react笔记</a>
 
 ### Vue
+- <a href="learn/vue组件发布到NPM.md">vue组件发布到NPM</a>
 * [vue 配置webpack的路径别名 @符号的使用](https://github.com/sgr-coderChen/blog/issues/1)
 * [vue自定义组件v-model的实现和原理剖析](https://github.com/sgr-coderChen/blog/issues/11)
 * [vue组件API插件式调用 - vue-create-api的使用](https://github.com/sgr-coderChen/blog/issues/12)
