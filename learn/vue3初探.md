@@ -154,10 +154,16 @@ console.log('x2', x) // 0
 
 [转载-ref与reactive](https://juejin.cn/post/7029559671648518151)
 
+1. ref和reactive都可以做响应式
+
+2. ref:一般用在定义基本类型和引用类型，如果是引用类型底层会借助reactive形成proxy代理对象,可以直接复制整个对象，如table的数据请求回来，需要将数据整体赋值个响应对象这时如果使用的是reactive就无法进行响应。
+
+3. reactive：一般用在引用类型，如{}等,不能一次性修改整个对象，如我们后端请求table的数据数据，如果想一次性赋值的整个数组的话，就行不通，此时建议使用ref来定义数组。
+
 - 如果是基本类型推荐使用ref 写起来比较简洁
-- 如果是引用类型（对象，数组等）必须使用reactive，来保证其响应式
+- 如果是引用类型（对象，数组等）推荐使用reactive，来保证其响应式
 - 如果**ref**使用的是**引用类型**，底层ref会借助reactive的proxy 定义响应式
-- **reactive** 无法定义基本类型的proxy,且设置值无法响应数据
+- **reactive** 无法定义基本类型的proxy,且设置值无法响应数据（需要**reactive({ key: value })**这样用，不能直接赋值基本类型）
 
 ### 除了对象都用ref来定义
 
@@ -573,5 +579,132 @@ export default TodoForm
 
 
 
+## 7.teleport(传送)
 
+> teleport可以指定组件的渲染节点，例如子组件中套有弹框组件 通过teleport包裹可以挂载到最外层的dom结构中
+
+示例代码：modal弹框应用
+
+1.新建顶层挂载节点
+
+```html
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <title><%= htmlWebpackPlugin.options.title %></title>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+        
+    <div id="modal"></div>  <!-- 这里要加一个挂载的id 对应 teleport的to路径 -->
+        
+        
+  </body>
+</html>
+
+```
+
+
+
+2.子组件 src/compontents/Modal.vue
+
+```vue
+<template>
+    <teleport to='#modal'>
+        <div v-if="isOpen" class="modal-container">
+            <slot>
+                <h1>我是弹框</h1>
+            </slot>
+            <button @click="handleClick">关闭</button>
+        </div>
+    </teleport>
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue'  // 通过defineComponent包裹 实现ts提示支持
+
+export default defineComponent({
+    props: {
+        isOpen: {
+            type: Boolean,
+            default: false
+        }
+    },
+    emits: {// 类似props的校验 https://v3.cn.vuejs.org/guide/migration/emits-option.html#%E6%A6%82%E8%BF%B0
+        'close': null
+    },
+    // 通过setup整合组件的状态和方法，vue2中则需要写data，methods分块书写
+    setup(props, context) { // context相当于this（api有 slot，emit，attrs，expose）
+        const handleClick = () => {
+            context.emit('close')
+        }
+        return {
+            handleClick
+        }
+    }
+})
+
+</script>
+
+<style scoped lang="less">
+
+.modal-container{
+    position: fixed;
+    width: 150px;
+    height: 150px;
+    border: 2px solid #000;
+    background-color: #fff;
+    left: 50%;
+    top: 50%;
+    margin-left: -75px;
+    margin-top: -75px;
+}
+
+</style>
+
+```
+
+3.父组件中使用
+
+```vue
+<template>
+    <div>
+        <button @click="openModal">打开弹框</button>
+        <Modal :isOpen="isOpen" @close="closeModal" />
+    </div>
+</template>
+
+<script lang="ts">
+import Modal from '../components/Modal.vue'
+import { ref } from 'vue'
+
+export default {
+    components: { Modal },
+    setup() {
+        const isOpen = ref(false)
+
+        const closeModal = () => {
+            isOpen.value = false
+        }
+
+        const openModal = () => {
+            isOpen.value = true
+        }
+
+        return {
+            isOpen,
+            closeModal,
+            openModal
+        }
+    }
+};
+</script>
+```
 
