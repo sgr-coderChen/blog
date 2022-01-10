@@ -719,6 +719,52 @@ export default function normal(state = {}, action) {
 
 
 
+## CSS样式问题
+
+模块与非模块导入
+
+```tsx
+// CSS Modules
+import styles from './foo.css';
+
+// 非 CSS Modules
+import './foo.css';
+```
+
+
+
+组件代码
+
+```tsx
+import React from 'react'
+// import './index.less'  // 样式会全局污染
+import styles from './index.less' // 会在样式上面增加哈希 相当于vue.scoped 
+//（生成出来的是这样的className: dropdown-option is-disabled___dWMn9）
+
+const DropdownItem = (props: any) => {
+    return (
+        <li 
+            className={`dropdown-option ${props.disabled ? styles['is-disabled']  : ''}`}
+        >
+            { props.children }
+        </li>
+    )
+}
+
+export default DropdownItem
+
+```
+
+样式代码 less
+
+```less
+.is-disabled {
+    background-color: pink;
+    pointer-events: none;
+    color: red;
+}
+```
+
 
 
 

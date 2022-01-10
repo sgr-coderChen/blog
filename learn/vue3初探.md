@@ -708,3 +708,430 @@ export default {
 </script>
 ```
 
+
+
+## 8.suspense
+
+> 异步展示组件，类似vue-promise库只关心数据状态
+
+使用suspense组件必须在setup返回一个Promise，推荐使用async，会自动向外包裹Promise对象
+
+```vue
+<template>
+    <div>
+        <img :src="result && result.message" alt="">
+        <!-- {{ result }} -->
+    </div>
+</template>
+
+<script>
+import { defineComponent } from 'vue'
+import axios from 'axios'
+
+export default defineComponent({
+    // setup() {
+    //     return new Promise((resolve) => {
+    //         setTimeout(() => {
+    //             resolve({
+    //                 result: 11
+    //             })
+    //         }, 3000);
+    //     })
+    // }
+    async setup() { // async最后会默认包裹返回promise对象
+        const dog = await axios.get('https://dog.ceo/api/breeds/image/random')
+        return {
+            result: dog.data
+        }
+    }
+})
+
+</script>
+```
+
+父组件使用
+
+- 如果有多名插槽 ，#default需要显式的写出来
+- suspense会等待#default里面所有的异步请求返回后才显示
+
+```vue
+<template>
+    <div>
+        <suspense>
+            <template #default>
+                <AsyncDog />
+                <AsyncDog2 />
+            </template>
+            <template #fallback>
+                <div>loading...</div>
+            </template>
+        </suspense>
+    </div>
+</template>
+```
+
+
+
+## 9.封装Dropdown UI组件
+
+> 组件模块化+ts+hook+双向绑定
+
+- 引入boostrap样式库
+
+```html
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+```
+
+- 新建Dropdown.vue
+
+```vue
+<template>
+    <div class="dropdown" ref="dropdownRef">
+        <button
+            @click="toggleOpen()"
+            class="btn btn-default dropdown-toggle"
+            type="button"
+            id="dropdownMenu1"
+            data-toggle="dropdown"
+        >
+            Dropdown
+            <span class="caret"></span>
+        </button>
+        <ul :style="{ display: isOpen ? 'block' : 'none' }" class="dropdown-menu">
+            <slot></slot>
+        </ul>
+    </div>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref, watch } from 'vue'
+import useClickOutside from '../hooks/useClickOutside'
+
+export default defineComponent({
+    name: 'Dropdown',
+    props: {
+        value: {
+            type: Boolean
+        }
+    },
+    emits: ['input'], // 定义与校验事件，同props
+    setup(props, context) {
+        // console.log('props' ,props)
+        const isOpen = ref(props.value)
+        const dropdownRef = ref<null | HTMLElement>(null)
+        const isClickOutside = useClickOutside(dropdownRef)
+
+        watch(isClickOutside, (newVal) => {
+            if (isOpen.value && newVal) {
+                isOpen.value = false
+            }
+        })
+
+        const toggleOpen = () => {
+            isOpen.value = !isOpen.value
+            context.emit('input', isOpen.value) // 在props定义value 并触发input事件 实现v-model
+        }
+
+        return {
+            isOpen,
+            dropdownRef,
+            toggleOpen
+        }
+    }
+})
+</script>
+
+```
+
+- 新建DropdownItem.vue
+
+```vue
+<template>
+    <li 
+        class="dropdown-option"
+        :class="{ 'is-disabled': disabled }"
+    >
+        <slot></slot>
+    </li>
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+    name: 'DropdownItem',
+    props: {
+        disabled: {
+            type: Boolean,
+            default: false
+        }
+    }
+})
+</script>
+
+
+<style lang="less">
+.dropdown-option.is-disabled *{
+    background-color: transparent;
+    pointer-events: none;
+    color: #6c757d;
+}
+</style>
+```
+
+- 自定义hook，抽离dropdown组件的逻辑为 useClickOutside.ts文件
+
+```ts
+//  点击本身及子元素不关闭dropdown，否则关闭。 contains https://developer.mozilla.org/zh-CN/docs/Web/API/Node/contains
+import { ref, Ref, onMounted, onUnmounted } from 'vue'
+
+type ElementRef = Ref<null | HTMLElement>
+
+const useClickOutside = (elementRef: ElementRef) => {
+
+    const isClickOutside = ref(false)
+
+    const handleClick = (e: MouseEvent) => {
+        // console.log('e', e.target)
+        if (elementRef.value) {
+            if (elementRef.value.contains(e.target as HTMLElement)) {// 如果包含或者为本身 则点击了内部
+                isClickOutside.value = false
+            } else {// 点击在元素之外 => 关闭dropdown
+                isClickOutside.value = true
+            }
+        }
+    }
+
+    onMounted(() => {
+        document.addEventListener('click', handleClick)
+        // console.log('elementRef', elementRef)
+    })
+
+    onUnmounted(() => {
+        document.removeEventListener('click', handleClick)
+    })
+
+    return isClickOutside
+}
+
+export default useClickOutside
+```
+
+- 使用Dropdown组件
+
+```vue
+<template>
+    <div class="dropdown-demo">
+        <dropdown v-model="isOpen">
+            <dropdown-item>
+                <a href="#">用户详情</a>
+            </dropdown-item>
+            <dropdown-item>
+                <a href="#">查询余额</a>
+            </dropdown-item>
+            <dropdown-item :disabled="true">
+                <a href="#">退出登录</a>
+            </dropdown-item>
+        </dropdown>
+    </div>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref } from 'vue'
+import Dropdown from '../components/Dropdown.vue'
+import DropdownItem from '../components/DropdownItem.vue'
+
+export default defineComponent({
+    components: { Dropdown, DropdownItem },
+    setup() {
+        const isOpen = ref(false)
+
+        return {
+            isOpen,
+        }
+    }
+})
+</script>
+
+```
+
+
+
+## 10.使用react hook实现Dropdown
+
+- Dropdown.tsx 父组件
+
+```tsx
+import { useState, useRef, useEffect } from 'react'
+import useClickOutside from '../../hooks/useClickOutside'
+
+const Dropdown = (props: any) => {
+
+    let [isOpen, setOpen] = useState(false)
+    const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+    let isClickOutside = useClickOutside(dropdownRef)
+
+
+    const toggleOpen = (e: any) => {
+        setOpen(isOpen = !isOpen)
+    }
+
+    useEffect(() => {
+        // console.log('isOpen改变了', isOpen)
+        props.onChange?.(isOpen)
+    }, [isOpen])
+
+    useEffect(() => {
+        // console.log('isClickOutside改变了', isClickOutside)
+        if (isOpen && isClickOutside) {
+            setOpen(isOpen = false)
+        }
+    }, [isClickOutside])
+
+    return (
+        <div
+            className="dropdown" 
+            ref={dropdownRef} 
+            style={{width: '101px'}}
+        >
+            <button
+                className="btn btn-default dropdown-toggle"
+                type="button"
+                id="dropdownMenu1"
+                data-toggle="dropdown"
+                onClick={(e) => toggleOpen(e)}
+            >
+                Dropdown
+                <span className="caret"></span>
+            </button>
+            <ul style={{ display: isOpen ? 'block' : 'none' }} className="dropdown-menu">
+                { props.children }
+            </ul>
+        </div>
+    )
+}
+
+export default Dropdown
+```
+
+- DropdownItem.tsx子组件
+
+```tsx
+import React from 'react'
+// import './index.less'
+import styles from './index.less'
+
+const DropdownItem = (props: any) => {
+    return (
+        <li 
+            className={`dropdown-option ${props.disabled ? styles['is-disabled']  : ''}`}
+        >
+            { props.children }
+        </li>
+    )
+}
+
+export default DropdownItem
+```
+
+- useClickOutside.ts
+
+```ts
+import { useState, useEffect } from 'react'
+
+const useClickOutside = (elementRef: any) => {
+
+    let [isClickOutside, setClickOutside] = useState(false);
+
+    const handleClick = (e: MouseEvent) => {
+        if (elementRef) {
+            if ((elementRef.current).contains(e.target)) {
+                setClickOutside(isClickOutside = false)
+            } else {
+                setClickOutside(isClickOutside = true)
+            }
+        }
+    
+    }
+
+    useEffect(() => {
+        document.addEventListener('click', handleClick)
+        return () => {
+            // cleanup
+            document.removeEventListener('click', handleClick)
+        }
+    }, [])
+    
+    return isClickOutside
+
+}
+
+export default useClickOutside
+```
+
+- useModelBind.ts （模拟vue的v-model双向绑定）
+
+```ts
+import { useState } from 'react'
+
+const useModelBind = (initialValue?: any) => {
+    let [value, setValue] = useState(initialValue);
+
+    const onChange = (_value: any) => {
+        setValue(value = _value)
+    }
+
+    return {
+        value,
+        onChange,
+    }
+}
+
+export default useModelBind
+```
+
+- 使用Dropdown组件
+
+```tsx
+import { useEffect } from 'react'
+import Dropdown from '../components/Dropdown/index'
+import DropdownItem from '../components/Dropdown/DropdownItem'
+import useModelBind from '../hooks/useModelBind'
+
+const DropdownDemo = () => {
+    // 不抽离hook（双向绑定）
+    // let [isOpen, setIsOpen] = useState(false)
+    // const handleOnChange = (_isOpen: boolean) => {
+    //     console.log('子传过来的', _isOpen)
+    //     setIsOpen(isOpen = _isOpen)
+    //     console.log('父数据新', isOpen)
+    // }
+    
+ 	// 优化：抽离hook（双向绑定）
+    const dropdownState = useModelBind(false)
+    
+    useEffect(() => {// 增加[dropdownState.value] 相当于vue的 watch
+        console.log('变化了', dropdownState.value)
+    }, [dropdownState.value])
+
+    return (
+        <div className="dropdown-demo">
+            <Dropdown { ...dropdownState }>
+                <DropdownItem>
+                    <a href="javascript:void(0);">用户详情</a>
+                </DropdownItem>
+                <DropdownItem>
+                    <a href="javascript:void(0);">查询余额</a>
+                </DropdownItem>
+                <DropdownItem disabled={true}>
+                    <a href="javascript:void(0);">退出登录</a>
+                </DropdownItem>
+            </Dropdown>
+        </div>
+    )
+}
+
+export default DropdownDemo
+```
+
