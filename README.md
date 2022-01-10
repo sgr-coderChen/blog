@@ -1,6 +1,7 @@
 ## 文章列表
 
 ### 学习笔记
+- <a href="https://github.com/sgr-coderChen/blog/issues/21">vue3.0与react hook实现Dropdown组件</a>
 - <a href="learn/vue3初探.md">vue3初探（类比react新特性）</a>
 - <a href="learn/May.md">五月篇</a>
 - <a href="learn/June.md">六月篇</a>
@@ -13,7 +14,7 @@
 ### Vue
 - <a href="learn/vue组件发布到NPM.md">vue组件发布到NPM</a>
 * [vue 配置webpack的路径别名 @符号的使用](https://github.com/sgr-coderChen/blog/issues/1)
-* [vue自定义组件v-model的实现和原理剖析](https://github.com/sgr-coderChen/blog/issues/11)
+* [vue自定义组件v-model的实现和原理剖析（含vue3.0）](https://github.com/sgr-coderChen/blog/issues/11)
 * [vue组件API插件式调用 - vue-create-api的使用](https://github.com/sgr-coderChen/blog/issues/12)
 * [vuedraggable拖拽组件-多列拖拽示例（附其中一列数据为空无法拖拽的解决方案）](https://github.com/sgr-coderChen/blog/issues/13)
 * [vue 中$attrs $listeners inheritAttrs使用（常用于封装高阶组件，第三方组件）](https://github.com/sgr-coderChen/blog/issues/15)
