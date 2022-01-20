@@ -227,3 +227,71 @@ function testB() {
         },
 ```
 
+
+
+
+
+## css模块化
+
+1.开启模块
+
+```js
+module: {
+        rules: [
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: [
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: ['@babel/preset-env'],
+                        }
+                    },
+                ]
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            modules: true, // <= 开启css模块化
+                        }
+                    },
+                    'postcss-loader'
+                ]
+            }
+        ]
+    }
+```
+
+插入head标签中的style, 会生成额外的哈希值
+
+```css
+.jiiwoQM4RBXA8T7kGVrB{
+    ...
+}
+```
+
+2.css文件变为模块导入
+
+```js
+import styles from './app.css'
+console.log(styles)
+// => {box: 'jiiwoQM4RBXA8T7kGVrB'}  有一个css类名和哈希的映射关系
+```
+
+> vue react内部就使用了这个css模块化
+
+3.也可以部分开启 CSS 模块模式，比如全局样式可以冠以 .global 前缀，如：
+
+1. *.global.css 普通模式
+
+2. *.css css module模式
+
+这里统一用 global 关键词进行识别。正则匹配 .global.css不加哈希，其他都加上哈希 ，达到vue scoped的效果
+
+
+
