@@ -135,7 +135,7 @@
     function foo(){};
     
     执行顺序：
-    foo() 			  //函数提升
+    function foo(){}  //函数提升
 	var foo			  //和函数重名了，被忽略
     console.log(foo);	  //打印函数
     foo = 1;		  //全局变量foo
