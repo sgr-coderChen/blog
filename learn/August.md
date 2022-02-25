@@ -543,7 +543,7 @@ export const createPicker = (columns, title, onConfirm, single = true) => {// si
         return instanceCache
     }
     //  创建实例 
-    const getInstance = () => 
+    const getInstance = () => {
         if (single) {// 如果是单例
             if (!instanceCache) {// 第一次创建
                 return initComponent()
