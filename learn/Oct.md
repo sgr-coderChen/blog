@@ -1149,6 +1149,8 @@ const res = cameCase('hellow')
 const arr1: Array<number> = [1,2,3]
 const arr2: number[] = [1, 2, 3]
 
+const arr1: Array<{ a: number }> = [{ a: 1 }]
+const arr2: { a: number }[] = [{ a: 1 }]
 
 function sum (...args: number[]) {// 使用了ts 就不需要去挨个判断是否为数字类型  ts会直接报错
     return args.reduce((pre, cur) => pre + cur, 0) 
@@ -1183,10 +1185,18 @@ interface Post {
     title: string
     content: string
     subTitle?: string
-    readonly footer: string
 }
 
 function demo(post: Post) {
+    console.log(post.title)
+    console.log(post.content)
+}
+
+//  默认值写法（接口申明放默认值前面）
+function demo2(post: Post = {
+    title: '11',
+    content: 'sfe',
+}) {
     console.log(post.title)
     console.log(post.content)
 }
