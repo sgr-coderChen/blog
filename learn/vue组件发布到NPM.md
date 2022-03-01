@@ -81,10 +81,10 @@ export default {
 
 
 
-### 打包优化（vue依赖问题未解决！！！）
+### 打包优化
 
 - 配置productionSourceMap : false   生产环境 去除 map文件
-- **打包是排除vue等依赖 ( 未实现，实测安装以后，npm内部还是安装了node_modules/vue的依赖)**
+- 放置到开发依赖（解决vue依赖问题在生产环境中出现子依赖）
 
 ```js
 module.exports = {
@@ -92,13 +92,6 @@ module.exports = {
         extract: false,  // 将组件里的css打入到umd.js中,不需要额外在安装插件后引入css (注意：公共style文件夹的样式需要在入口文件单独引入 src/index.js)
     },
     productionSourceMap: false, // 生产环境 去除 map文件
-    configureWebpack: (config) => { // 这里的优化未实现
-        if (process.env.NODE_ENV === 'production') {
-            config.externals = {
-                'vue': 'Vue',
-            }
-        }
-    }
 }
 ```
 
