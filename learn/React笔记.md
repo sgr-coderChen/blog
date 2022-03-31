@@ -769,6 +769,35 @@ export default DropdownItem
 
 
 
+## antd样式局部修改
+
+index.less
+
+```less
+.cardBox {// 外面套一层防止全局污染
+    :global{ //global里面去设置antd的样式
+        .ant-pro-card .ant-pro-card-body{
+            padding: 5px;
+        }
+    }
+}
+```
+
+引入tsx中
+
+```tsx
+import s from './index.less'  // 必须要以模块方式导入 ， import './index.less' 会无效
+
+<PageContainer
+    className={s.test} 
+    header={{
+            title: '用户管理',
+            ghost: true,
+            breadcrumb: { routes },
+    }}
+/>
+```
+
 
 
 
