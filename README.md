@@ -12,6 +12,7 @@
 - <a href="learn/Sept.md">九月篇</a>
 - <a href="learn/Oct.md">十月篇</a>
 - <a href="learn/React笔记.md">react笔记</a>
+- <a href="learn/原生微信小程序笔记.md">原生微信小程序笔记</a>
 
 ### Vue
 - <a href="learn/vue组件发布到NPM.md">vue组件发布到NPM</a>
